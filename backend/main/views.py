@@ -161,21 +161,41 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(post)
         return Response(serializer.data)
 
-    def perform_create(self, serializer):
-        # Fetch the token from the query parameters
-        token_key = self.request.query_params.get('token')
-        if not token_key:
-            return Response({'detail': 'Token is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
+    def update(self, request, *args, **kwargs):
+        edit_param = request.query_params.get('edit')
+        if edit_param != 'true':
+            return Response({'detail': 'Edit parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        uuid = kwargs.get('pk')
         try:
-            # Fetch the token and user
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
-            return Response({'detail': 'Invalid token.'}, status=status.HTTP_401_UNAUTHORIZED)
+            post = Post.objects.get(uuid=uuid)
+        except Post.DoesNotExist:
+            raise NotFound('Post not found.')
 
-        # Save the post with the authenticated user
-        serializer.save(user=user)
+        serializer = self.get_serializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, *args, **kwargs):
+        edit_param = request.query_params.get('edit')
+        if edit_param != 'true':
+            return Response({'detail': 'Edit parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        uuid = kwargs.get('pk')
+        try:
+            post = Post.objects.get(uuid=uuid)
+        except Post.DoesNotExist:
+            raise NotFound('Post not found.')
+
+        serializer = self.get_serializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
 
 # # Upvote ViewSet
 # class UpvoteViewSet(viewsets.ModelViewSet):
