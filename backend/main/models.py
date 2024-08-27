@@ -66,7 +66,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     caption = models.TextField()
-    post_img_url = models.URLField(max_length=200)
+    post_img_url = models.URLField(max_length=200, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
 class Upvote(models.Model):

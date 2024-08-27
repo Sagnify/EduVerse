@@ -13,8 +13,8 @@ urlpatterns = [
     path('userprofiles/teacher/', views.UserProfileTeacherViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='userprofileteacher-list-create'),
     # path('userprofiles/teacher/<pk>/', views.UserProfileTeacherViewSet.as_view({ 'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='userprofileteacher-detail'),
 
-    # path('posts/', PostListCreateView.as_view(), name='post-list-create'),
-    # path('posts/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
+    path('posts/', views.PostViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='post-list-create'),
+    path('posts/<uuid:pk>/', views.PostViewSet.as_view({'get': 'retrieve', 'post': 'create', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='post-detail'),
 
     # path('upvotes/', UpvoteListCreateView.as_view(), name='upvote-list-create'),
     # path('upvotes/<int:pk>/', UpvoteDetailView.as_view(), name='upvote-detail'),

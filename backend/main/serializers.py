@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import *
 
+## User Serializers 
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -137,11 +138,20 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 
+## Post Serializers
+class PostListSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')  # Show username or other user info
 
-# class PostSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Post
-#         fields = '__all__'
+    class Meta:
+        model = Post
+        fields = ['id','created_at', 'user', 'caption', 'post_img_url', 'uuid']
+
+class PostCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['caption', 'post_img_url']
+
+
 
 # class UpvoteSerializer(serializers.ModelSerializer):
 #     class Meta:

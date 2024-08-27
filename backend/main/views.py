@@ -141,9 +141,41 @@ class UserProfileStudentViewSet(viewsets.ModelViewSet):
 
 
 # Post ViewSet
-# class PostViewSet(viewsets.ModelViewSet):
-#     queryset = Post.objects.all()
-#     serializer_class = PostSerializer
+class PostViewSet(viewsets.ModelViewSet):
+    authentication_classes = [QueryParamTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Post.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return PostListSerializer
+        return PostCreateSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        uuid = kwargs.get('pk')
+        try:
+            post = Post.objects.get(uuid=uuid)
+        except Post.DoesNotExist:
+            raise NotFound('Post not found.')
+
+        serializer = self.get_serializer(post)
+        return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        # Fetch the token from the query parameters
+        token_key = self.request.query_params.get('token')
+        if not token_key:
+            return Response({'detail': 'Token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Fetch the token and user
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Save the post with the authenticated user
+        serializer.save(user=user)
 
 # # Upvote ViewSet
 # class UpvoteViewSet(viewsets.ModelViewSet):
