@@ -21,7 +21,7 @@ class UserProfileStudent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     # name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15, default=" ")
-    profile_pic = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    profile_pic = models.URLField(blank=True, null=True)
     address = models.TextField(default="")
     gender = models.CharField(max_length=10, default=" ")
     stream = models.CharField(max_length=50, default=" ")
@@ -35,7 +35,7 @@ class UserProfileTeacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='teacher_profile')
     # name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15, default=" ")
-    profile_pic = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    profile_pic = models.URLField(blank=True, null=True)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
     bio = models.TextField(default=" ")
 

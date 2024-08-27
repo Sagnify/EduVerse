@@ -36,16 +36,25 @@ class UserApiView(ListCreateAPIView):
     permission_classes = [AllowAny]
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        data = []
-        for user in queryset:
+        user_id = request.query_params.get('user_id')
+        if user_id:
+            user = get_object_or_404(User, id=user_id)
             try:
                 user_data = self.get_serializer(user).data
-                data.append(user_data)
+                return Response(user_data)
             except Exception as e:
-                # Log the error
                 logger.error(f"Error serializing user {user.id}: {str(e)}")
-        return Response(data)
+                return Response({"error": "Error retrieving user data"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            queryset = self.get_queryset()
+            data = []
+            for user in queryset:
+                try:
+                    user_data = self.get_serializer(user).data
+                    data.append(user_data)
+                except Exception as e:
+                    logger.error(f"Error serializing user {user.id}: {str(e)}")
+            return Response(data)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
