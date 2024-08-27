@@ -33,6 +33,10 @@ const RoleSchema = z.object({
   }),
 });
 
+{/* 
+          *TODO: To make a selector for gender, To add some icons for the is teacher/ student check box and make it more interactive
+  */}
+
 export default function SignUpPage() {
   const [step, setStep] = useState(1);
   const [username, setUsername] = useState("");
@@ -206,7 +210,7 @@ export default function SignUpPage() {
               </Button>
             </>
           )}
-
+          
           {step === 2 && (
             <>
               <Form {...form}>
