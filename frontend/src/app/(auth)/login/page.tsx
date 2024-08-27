@@ -51,11 +51,13 @@ export default function Login() {
   }
 
   return (
-    <div className="flex items-center justify-center text-center w-full h-screen p-5 bg-gradient-to-r from-violet-600 to-indigo-600">
+    <div className="flex items-center justify-center text-center w-full text-background h-screen p-5 bg-gradient-to-r from-violet-700 to-pink-200">
       <Card className=" p-5 w-96 shadow-xl bg-white/10 backdrop-blur-xl border-0">
         <CardHeader>
-          <CardHeader className="text-3xl font-bold m-0 p-0 text-background">Login</CardHeader>
-          <CardDescription className="text-foreground">
+          <CardHeader className="text-3xl font-bold m-0 p-0 text-background">
+            Login
+          </CardHeader>
+          <CardDescription className="font-bold text-background">
             Login to your account to access.
           </CardDescription>
         </CardHeader>
@@ -69,7 +71,7 @@ export default function Login() {
               id="username"
               {...register("username")}
               placeholder="Username"
-              className="form-control bg-white/10 backdrop-blur-xl"
+              className="form-control bg-white/10 backdrop-blur-xl "
             />
           </div>
 
@@ -83,13 +85,13 @@ export default function Login() {
               id="password"
               placeholder="Password"
               {...register("password")}
-              className="form-control bg-white/10 backdrop-blur-xl"
+              className="form-control bg-white/10 backdrop-blur-xl "
             />
           </div>
 
           <Button
             type="submit"
-            className="btn btn-primary btn-block mb-4"
+            className="btn btn-primary btn-block mb-4 font-bold"
             disabled={isLoading}
           >
             {isLoading ? "Signing in..." : "Sign in"}
