@@ -10,7 +10,9 @@ export interface UserProfile {
 
 export interface SignupData {
   username: string;
-  displayName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
   password: string;
   isStudent: boolean;
   isTeacher: boolean;
@@ -27,9 +29,9 @@ export async function signup(data: SignupData) {
       },
       body: JSON.stringify({
         username: data.username,
-        first_name: data.displayName,
-        last_name: "",
-        email: "", // You might need to provide this
+        first_name: data.firstName,
+        last_name: data.lastName,
+        email: data.email,
         password: data.password,
         profile: {
           is_student: data.isStudent,
@@ -50,7 +52,7 @@ export async function signup(data: SignupData) {
               bio: data.teacherProfile?.bio || "",
               rating: "0.00",
             }
-          : {}, // Send an empty object instead of null
+          : {}, // Sending an empty object instead of null
       }),
     });
 
