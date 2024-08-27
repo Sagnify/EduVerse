@@ -6,8 +6,10 @@ import { signup } from "./actions/signup";
 
 export default function SignUpPage() {
   const [username, setUsername] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [isStudent, setIsStudent] = useState(false);
   const [isTeacher, setIsTeacher] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -25,7 +27,9 @@ export default function SignUpPage() {
     try {
       await signup({
         username,
-        displayName,
+        firstName,
+        lastName,
+        email,
         password,
         isStudent,
         isTeacher,
@@ -36,7 +40,7 @@ export default function SignUpPage() {
       });
 
       // Redirect or show success message
-      router.push("/success");
+      router.push("/");
     } catch (error) {
       console.error("Error signing up:", error);
     }
@@ -44,6 +48,8 @@ export default function SignUpPage() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-md mx-auto p-4">
+
+      {/* username */}
       <div>
         <label htmlFor="username">Username</label>
         <input
@@ -55,17 +61,45 @@ export default function SignUpPage() {
           required
         />
       </div>
+
+      {/* first name */}
       <div>
-        <label htmlFor="displayName">Display Name</label>
+        <label htmlFor="firstName">First Name</label>
         <input
-          id="displayName"
+          id="firstName"
           type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
           className="block w-full border rounded p-2"
           required
         />
       </div>
+
+      {/* last name */}
+      <div>
+        <label htmlFor="lastName">Last Name</label>
+        <input
+          id="lastName"
+          type="text"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          className="block w-full border rounded p-2"
+        />
+      </div>
+
+      {/* email */}
+      <div>
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="block w-full border rounded p-2"
+        />
+      </div>
+
+      {/* password */}
       <div>
         <label htmlFor="password">Password</label>
         <input
@@ -77,6 +111,8 @@ export default function SignUpPage() {
           required
         />
       </div>
+
+      {/* user type */}
       <div>
         <label>
           <input
@@ -101,6 +137,8 @@ export default function SignUpPage() {
           Teacher
         </label>
       </div>
+
+      {/* student or teacher fields */}
       {isStudent && (
         <>
           <div>
@@ -155,6 +193,7 @@ export default function SignUpPage() {
           </div>
         </>
       )}
+
       {isTeacher && (
         <>
           <div>
@@ -178,9 +217,13 @@ export default function SignUpPage() {
           </div>
         </>
       )}
+
+      {/* submit button */}
       <button type="submit" className="bg-blue-500 text-white rounded p-2">
         Sign Up
       </button>
+
+
     </form>
   );
 }

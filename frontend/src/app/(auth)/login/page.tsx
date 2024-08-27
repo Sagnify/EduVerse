@@ -1,25 +1,41 @@
 "use client";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import { z } from "zod";
 import { loginUser } from "./actions/login";
+import { useForm } from "react-hook-form";
+import { Card, CardDescription, CardHeader } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Define the schema for the form using Zod
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(5, "Password must be at least 5 characters long"),
+});
+
+type LoginFormInputs = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  async function submitHandler(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormInputs>({
+    resolver: zodResolver(loginSchema),
+  });
 
+  async function submitHandler(data: LoginFormInputs) {
     setIsLoading(true);
     setErrorMessage("");
 
-    const fd = new FormData(e.currentTarget);
-    const formData = {
-      username: fd.get("u_name") as string,
-      password: fd.get("p_word") as string,
-    };
-
-    const result = await loginUser(formData);
+    const result = await loginUser(data);
 
     if (result.success) {
       setSuccessMessage(result.message);
@@ -34,51 +50,62 @@ export default function Login() {
   }
 
   return (
-    <div className="col-md-6">
-      <h3>Login</h3>
-      <hr />
-      <form onSubmit={submitHandler}>
-        <div className="form-outline mb-4">
-          <input
-            type="text"
-            id="username"
-            className="form-control"
-            name="u_name"
-            required
-          />
-          <label className="form-label" htmlFor="username">
-            Username
-          </label>
-        </div>
+    <div className="flex items-center justify-center text-center w-full h-screen p-5 bg-gradient-to-r from-violet-600 to-indigo-600">
+      <Card className=" p-5 w-96 shadow-xl bg-white/10 backdrop-blur-xl border-0">
+        <CardHeader>
+          <CardHeader className="text-3xl font-bold m-0 p-0 text-background">Login</CardHeader>
+          <CardDescription className="text-foreground">
+            Login to your account to access.
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit(submitHandler)}>
+          {errors.username && (
+            <p className="text-red-400">{errors.username.message}</p>
+          )}
+          <div className="mb-4">
+            {/* <Label htmlFor="username">Username</Label> */}
+            <Input
+              id="username"
+              {...register("username")}
+              placeholder="Username"
+              className="form-control bg-white/10 backdrop-blur-xl"
+            />
+          </div>
 
-        <div className="form-outline mb-4">
-          <input
-            type="password"
-            id="loginPassword"
-            className="form-control"
-            name="p_word"
-            required
-          />
-          <label className="form-label" htmlFor="loginPassword">
-            Password
-          </label>
-        </div>
+          <div className="mb-4">
+            {/* <Label htmlFor="password">Password</Label> */}
+            {errors.password && (
+              <p className="text-red-400">{errors.password.message}</p>
+            )}
+            <Input
+              type="password"
+              id="password"
+              placeholder="Password"
+              {...register("password")}
+              className="form-control bg-white/10 backdrop-blur-xl"
+            />
+          </div>
 
-        <button
-          type="submit"
-          className="btn btn-primary btn-block mb-4"
-          disabled={isLoading}
-        >
-          {isLoading ? "Signing in..." : "Sign in"}
-        </button>
-      </form>
+          <Button
+            type="submit"
+            className="btn btn-primary btn-block mb-4"
+            disabled={isLoading}
+          >
+            {isLoading ? "Signing in..." : "Sign in"}
+          </Button>
+        </form>
 
-      {successMessage && (
-        <div className="alert alert-success mt-3">{successMessage}</div>
-      )}
-      {errorMessage && (
-        <div className="alert alert-danger mt-3">{errorMessage}</div>
-      )}
+        {successMessage && (
+          <Alert variant="default" className="mt-3 w-full">
+            {successMessage}
+          </Alert>
+        )}
+        {errorMessage && (
+          <Alert variant="destructive" className="mt-3 w-full">
+            {errorMessage}
+          </Alert>
+        )}
+      </Card>
     </div>
   );
 }
