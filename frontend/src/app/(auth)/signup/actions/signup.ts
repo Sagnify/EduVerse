@@ -1,61 +1,60 @@
 // actions/signup.ts
+export interface UserProfile {
+  phoneNumber?: string;
+  address?: string;
+  gender?: string;
+  stream?: string;
+  standard?: string;
+  bio?: string;
+}
 
-export async function signupUser(formData: {
-  first_name: string;
-  last_name: string;
+export interface SignupData {
   username: string;
-  email: string;
+  displayName: string;
   password: string;
-  profile: {
-    is_student: boolean;
-    is_teacher: boolean;
-  };
-  student_profile?: {
-    phone_number: string;
-    profile_pic: File | null | string;
-    address: string;
-    gender: string;
-    stream: string;
-    standard: string;
-  };
-  teacher_profile?: {
-    phone_number: string;
-    profile_pic: File | null | string;
-    rating: number;
-    bio: string;
-  };
-}) {
-  // Set default profile picture if not provided
-  if (formData.student_profile && !formData.student_profile.profile_pic) {
-    formData.student_profile.profile_pic = "default_profile_pic.jpg";
-  }
-  if (formData.teacher_profile && !formData.teacher_profile.profile_pic) {
-    formData.teacher_profile.profile_pic = "default_profile_pic.jpg";
-  }
+  isStudent: boolean;
+  isTeacher: boolean;
+  studentProfile?: UserProfile;
+  teacherProfile?: UserProfile;
+}
 
-  try {
-    const res = await fetch("http://127.0.0.1:8000/api/users", {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-        "Content-Type": "application/json",
+export async function signup(data: SignupData) {
+  const response = await fetch("/api/users/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username: data.username,
+      first_name: data.displayName,
+      last_name: "", // You can adjust this based on your requirements
+      email: "", // You can adjust this based on your requirements
+      profile: {
+        is_student: data.isStudent,
+        is_teacher: data.isTeacher,
       },
-    });
+      student_profile: data.isStudent
+        ? {
+            phone_number: data.studentProfile?.phoneNumber,
+            address: data.studentProfile?.address,
+            gender: data.studentProfile?.gender,
+            stream: data.studentProfile?.stream,
+            standard: data.studentProfile?.standard,
+          }
+        : null,
+      teacher_profile: data.isTeacher
+        ? {
+            phone_number: data.teacherProfile?.phoneNumber,
+            bio: data.teacherProfile?.bio,
+            rating: "0.00", // Default value for rating
+          }
+        : null,
+    }),
+  });
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.detail || "Signup failed. Please try again.");
-    }
-
-    const resData = await res.json();
-    console.log(resData);
-
-    return { success: true, message: "Signup successful! Please log in." };
-  } catch (error: any) {
-    console.error("There was a problem with the fetch operation:", error);
-    return {
-      success: false,
-      message: error.message || "Signup failed. Please try again.",
-    };
+  if (!response.ok) {
+    throw new Error("Failed to sign up");
   }
+
+  return response.json();
 }
