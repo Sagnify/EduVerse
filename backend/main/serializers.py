@@ -67,8 +67,8 @@ class UserProfileTeacherUpdateSerializer(serializers.ModelSerializer):
 # User Serializer
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
-    student_profile = UserProfileStudentSerializer(required=False)
-    teacher_profile = UserProfileTeacherSerializer(required=False)
+    student_profile = UserProfileStudentSerializer(required=False, allow_null=True)
+    teacher_profile = UserProfileTeacherSerializer(required=False, allow_null=True)
     
     class Meta:
         model = User

@@ -20,12 +20,12 @@ class UserProfile(models.Model):
 class UserProfileStudent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     # name = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=15, default=" ")
+    phone_number = models.CharField(max_length=15, default=" ", null=True, blank=True)
     profile_pic = models.URLField(blank=True, null=True)
-    address = models.TextField(default="")
-    gender = models.CharField(max_length=10, default=" ")
-    stream = models.CharField(max_length=50, default=" ")
-    standard = models.CharField(max_length=50, default=" ")
+    address = models.TextField(default="", null=True, blank=True)
+    gender = models.CharField(max_length=10, default=" ", null=True, blank=True)
+    stream = models.CharField(max_length=50, default=" ", null=True, blank=True)
+    standard = models.CharField(max_length=50, default=" ", null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -34,10 +34,10 @@ class UserProfileStudent(models.Model):
 class UserProfileTeacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='teacher_profile')
     # name = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=15, default=" ")
+    phone_number = models.CharField(max_length=15, default=" ", null=True, blank=True)
     profile_pic = models.URLField(blank=True, null=True)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
-    bio = models.TextField(default=" ")
+    bio = models.TextField(default=" ", null=True, blank=True)
 
     def __str__(self):
         return self.name
