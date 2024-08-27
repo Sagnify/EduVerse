@@ -10,6 +10,7 @@ import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Metadata } from "next";
+import Link from "next/link";
 
 // Define the schema for the form using Zod
 const loginSchema = z.object({
@@ -51,19 +52,19 @@ export default function Login() {
   }
 
   return (
-    <div className="flex items-center justify-center text-center w-full text-background h-screen p-5 bg-gradient-to-r from-violet-700 to-pink-200">
-      <Card className=" p-5 w-96 shadow-xl bg-white/10 backdrop-blur-xl border-0">
+    <div className="flex items-center justify-center text-center w-full h-screen p-5 bg-gradient-to-r from-violet-700 to-pink-200">
+      <Card className=" p-5 w-96 shadow-xl border-0">
         <CardHeader>
-          <CardHeader className="text-3xl font-bold m-0 p-0 text-background">
-            Login
-          </CardHeader>
-          <CardDescription className="font-bold text-background">
+          <CardHeader className="text-3xl font-bold m-0 p-0">Login</CardHeader>
+          <CardDescription className="font-bold">
             Login to your account to access.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(submitHandler)}>
           {errors.username && (
-            <p className="text-red-400">{errors.username.message}</p>
+            <p className="text-red-400 mb-2 text-xs font-bold">
+              {errors.username.message}
+            </p>
           )}
           <div className="mb-4">
             {/* <Label htmlFor="username">Username</Label> */}
@@ -78,7 +79,9 @@ export default function Login() {
           <div className="mb-4">
             {/* <Label htmlFor="password">Password</Label> */}
             {errors.password && (
-              <p className="text-red-400">{errors.password.message}</p>
+              <p className="text-red-400 mb-2 text-xs font-bold">
+                {errors.password.message}
+              </p>
             )}
             <Input
               type="password"
@@ -91,22 +94,31 @@ export default function Login() {
 
           <Button
             type="submit"
-            className="btn btn-primary btn-block mb-4 font-bold"
+            className="btn btn-primary btn-block mb-4 font-bold w-full"
             disabled={isLoading}
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
+          <Link href="/signup" className="text-sm text-blue-500">
+            {`Don't have an account?`}
+          </Link>
         </form>
 
         {successMessage && (
-          <Alert variant="default" className="mt-3 w-full">
-            {successMessage}
-          </Alert>
+          <>
+            <hr className="mt-5"/>
+            <Alert variant="default" className="mt-3 w-full">
+              {successMessage}
+            </Alert>
+          </>
         )}
         {errorMessage && (
-          <Alert variant="destructive" className="mt-3 w-full">
-            {errorMessage}
-          </Alert>
+          <>
+            <hr className="mt-5"/>
+            <Alert variant="destructive" className="mt-3 w-full">
+              {errorMessage}
+            </Alert>
+          </>
         )}
       </Card>
     </div>
