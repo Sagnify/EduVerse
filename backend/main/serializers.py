@@ -149,7 +149,10 @@ class PostListSerializer(serializers.ModelSerializer):
 class PostCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['caption', 'post_img_url']
+        fields = ['caption', 'post_img_url','user']
+        extra_kwargs = {
+            'user': {'read_only': True}  # Ensure user is set internally
+        }
 
 
 

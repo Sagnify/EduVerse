@@ -24,8 +24,13 @@ class CustomObtainAuthToken(ObtainAuthToken):
         try:
             user = Token.objects.get(key=data['token']).user
             data['user_id'] = user.id
+            data['is_student'] = user.profile.is_student
+            data['is_teacher'] = user.profile.is_teacher
+
         except Token.DoesNotExist:
             data['user_id'] = None
+            data['is_student'] = False
+            data['is_teacher'] = False
 
         return Response(data)
     
@@ -193,6 +198,39 @@ class PostViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             self.perform_update(serializer)
             return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        uuid = kwargs.get('pk')
+        try:
+            post = Post.objects.get(uuid=uuid)
+        except Post.DoesNotExist:
+            raise NotFound('Post not found.')
+
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def create(self, request, *args, **kwargs):
+        token_key = request.query_params.get('token')
+        if not token_key:
+            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Include the user ID in the data
+        request.data._mutable = True  # Make request.data mutable
+        request.data['user'] = user.id
+        request.data._mutable = False  # Make request.data immutable
+
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
