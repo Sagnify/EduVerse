@@ -26,16 +26,13 @@ import Link from "next/link";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { GenderDropdown } from "@/components/GenderDropdown";
 
 const RoleSchema = z.object({
   role: z.enum(["student", "teacher"], {
     required_error: "You need to select either Student or Teacher.",
   }),
 });
-
-{/* 
-          *TODO: To make a selector for gender, To add some icons for the is teacher/ student check box and make it more interactive
-  */}
 
 export default function SignUpPage() {
   const [step, setStep] = useState(1);
@@ -210,7 +207,7 @@ export default function SignUpPage() {
               </Button>
             </>
           )}
-          
+
           {step === 2 && (
             <>
               <Form {...form}>
@@ -229,9 +226,9 @@ export default function SignUpPage() {
                             setRole(value as "student" | "teacher");
                           }}
                           defaultValue={role}
-                          className="flex flex-col space-y-1 items-center justify-center"
+                          className="flex items-center justify-center"
                         >
-                          <FormItem className="flex items-center space-x-3 space-y-0 w-fit p-3 bg-secondary rounded-sm">
+                          <FormItem className="flex items-center space-x-3 space-y-0 w-full p-3 bg-secondary rounded-sm">
                             <FormControl>
                               <RadioGroupItem value="student" />
                             </FormControl>
@@ -239,7 +236,7 @@ export default function SignUpPage() {
                               Student
                             </FormLabel>
                           </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0 w-fit p-3 bg-secondary rounded-sm">
+                          <FormItem className="flex items-center space-x-3 space-y-0 w-full p-3 bg-secondary rounded-sm">
                             <FormControl>
                               <RadioGroupItem value="teacher" />
                             </FormControl>
@@ -302,15 +299,7 @@ export default function SignUpPage() {
                   </div>
 
                   <div className="mb-4">
-                    <Input
-                      id="gender"
-                      type="text"
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                      placeholder="Gender"
-                      className="form-control bg-white/10 backdrop-blur-xl"
-                      required
-                    />
+                    <GenderDropdown gender={gender} setGender={setGender} />
                   </div>
 
                   <div className="mb-4">
