@@ -233,12 +233,71 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    def upvote(self, request, *args, **kwargs):
+        post_uuid = kwargs.get('pk')
+        token_key = request.query_params.get('token')
+        if not token_key:
+            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            post = Post.objects.get(uuid=post_uuid)
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Remove any existing downvote
+        Downvote.objects.filter(user=user, post=post).delete()
+
+        # Toggle the upvote
+        existing_upvote = Upvote.objects.filter(user=user, post=post).first()
+        if existing_upvote:
+            # Remove existing upvote
+            existing_upvote.delete()
+            return Response({'detail': 'Upvote removed.'}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            # Add new upvote
+            Upvote.objects.create(user=user, post=post)
+            return Response({'detail': 'Post upvoted.'}, status=status.HTTP_201_CREATED)
 
 
-# # Upvote ViewSet
-# class UpvoteViewSet(viewsets.ModelViewSet):
-#     queryset = Upvote.objects.all()
-#     serializer_class = UpvoteSerializer
+    def downvote(self, request, *args, **kwargs):
+        post_uuid = kwargs.get('pk')
+        token_key = request.query_params.get('token')
+        if not token_key:
+            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            post = Post.objects.get(uuid=post_uuid)
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Remove any existing upvote
+        Upvote.objects.filter(user=user, post=post).delete()
+
+        # Toggle the downvote
+        existing_downvote = Downvote.objects.filter(user=user, post=post).first()
+        if existing_downvote:
+            # Remove existing downvote
+            existing_downvote.delete()
+            return Response({'detail': 'Downvote removed.'}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            # Add new downvote
+            Downvote.objects.create(user=user, post=post)
+            return Response({'detail': 'Post downvoted.'}, status=status.HTTP_201_CREATED)
+
+    
+
 
 # # Comment ViewSet
 # class CommentViewSet(viewsets.ModelViewSet):

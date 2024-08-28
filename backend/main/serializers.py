@@ -141,10 +141,19 @@ class UserSerializer(serializers.ModelSerializer):
 ## Post Serializers
 class PostListSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')  # Show username or other user info
+    upvote_count = serializers.SerializerMethodField()
+    downvote_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id','created_at', 'user', 'caption', 'post_img_url', 'uuid']
+        fields = ['id','created_at', 'user', 'caption', 'post_img_url', 'uuid', 'upvote_count', 'downvote_count']
+
+    def get_upvote_count(self, obj):
+        return Upvote.objects.filter(post=obj).count()
+
+    def get_downvote_count(self, obj):
+        return Downvote.objects.filter(post=obj).count()
+
 
 class PostCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -155,11 +164,6 @@ class PostCreateSerializer(serializers.ModelSerializer):
         }
 
 
-
-# class UpvoteSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Upvote
-#         fields = '__all__'
 
 # class CommentSerializer(serializers.ModelSerializer):
 #     class Meta:
