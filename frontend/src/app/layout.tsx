@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
+import { ThemeProvider } from "next-themes";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -29,10 +30,12 @@ export default function RootLayout({
       <body
         className={cn("bg-background font-sans antialiased", fontSans.variable)}
       >
-        <nav className="fixed top-0 w-full">
-          <Navbar />
-        </nav>
-        <div className="mt-16">{children}</div>
+        <ThemeProvider>
+          <nav className="fixed top-0 w-full">
+            <Navbar />
+          </nav>
+          <div className="mt-16 pt-3">{children}</div>
+        </ThemeProvider>
       </body>
     </html>
   );

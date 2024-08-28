@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SearchIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
-import { UserButton } from "./UserButton";
+import UserButton from "./UserButton";
 import SearchField from "./searchField";
 import Icon from "./Icon";
 
@@ -27,18 +27,29 @@ export default function Navbar() {
           >
             <SearchIcon className="size-7 cursor-pointer text-muted-foreground" />
           </Button>
-
           <div className="hidden xl:block">
             <SearchField />
           </div>
-
-          Home
-
-          Library
-
-          Lectures
-
-          <UserButton />
+          <div className="flex gap-1 items-center">
+            <Link href={`/`}>
+              <Button variant="ghost" className="px-2">
+                Home
+              </Button>
+            </Link>
+            <Link href={`/library`}>
+              <Button variant="ghost" className="px-2">
+                Library
+              </Button>
+            </Link>
+            <Link href={`/lectures`}>
+              <Button variant="ghost" className="px-2">
+                Lectures
+              </Button>
+            </Link>
+            <Button variant="ghost" className="px-2">
+              <UserButton />
+            </Button>
+          </div>
         </div>
       </div>
 
