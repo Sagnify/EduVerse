@@ -23,7 +23,7 @@ class UserProfileStudent(models.Model):
     phone_number = models.CharField(max_length=15, default=" ", null=True, blank=True)
     profile_pic = models.URLField(blank=True, null=True)
     address = models.TextField(default="", null=True, blank=True)
-    gender = models.CharField(max_length=10, default=" ", null=True, blank=True)
+    gender = models.CharField(max_length=225, default=" ", null=True, blank=True)
     stream = models.CharField(max_length=50, default=" ", null=True, blank=True)
     standard = models.CharField(max_length=50, default=" ", null=True, blank=True)
 
@@ -88,7 +88,10 @@ class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     comment_caption = models.TextField()
-    parent_id = models.IntegerField(blank=True, null=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='replies')
+
+    def __str__(self):
+        return self.comment_caption
 
 class LibAsset(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

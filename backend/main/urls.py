@@ -19,8 +19,8 @@ urlpatterns = [
     path('posts/<uuid:pk>/upvote/', views.PostViewSet.as_view({'post': 'upvote'}), name='post-upvote'),
     path('posts/<uuid:pk>/downvote/', views.PostViewSet.as_view({'post': 'downvote'}), name='post-downvote'),
 
-    # path('comments/', CommentListCreateView.as_view(), name='comment-list-create'),
-    # path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
+    path('comments/', views.CommentViewSet.as_view({'get': 'list', 'post': 'create'}), name='comment-list-create'),
+    path('comments/<int:pk>/', views.CommentViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='comment-detail'),
 
     # path('libassets/', LibAssetListCreateView.as_view(), name='libasset-list-create'),
     # path('libassets/<int:pk>/', LibAssetDetailView.as_view(), name='libasset-detail'),

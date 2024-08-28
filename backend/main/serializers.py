@@ -165,10 +165,32 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
 
 
-# class CommentSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Comment
-#         fields = '__all__'
+class CommentSerializer(serializers.ModelSerializer):
+    replies = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'post', 'user', 'created_at', 'comment_caption', 'parent', 'replies']
+        read_only_fields = ['user', 'created_at']
+
+    def get_replies(self, obj):
+        replies = Comment.objects.filter(parent=obj)
+        serializer = CommentSerializer(replies, many=True)
+        return serializer.data
+
+    def get_user(self, obj):
+        return obj.user.username
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user'] = user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # Ensure that the user cannot be changed during update
+        validated_data.pop('user', None)
+        return super().update(instance, validated_data)
 
 # class LibAssetSerializer(serializers.ModelSerializer):
 #     class Meta:

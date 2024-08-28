@@ -299,10 +299,87 @@ class PostViewSet(viewsets.ModelViewSet):
     
 
 
-# # Comment ViewSet
-# class CommentViewSet(viewsets.ModelViewSet):
-#     queryset = Comment.objects.all()
-#     serializer_class = CommentSerializer
+## Comment ViewSet
+class CommentViewSet(viewsets.ModelViewSet):
+    authentication_classes = [QueryParamTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        # For list view, only fetch top-level comments (those without a parent)
+        if self.action == 'list':
+            return Comment.objects.filter(parent__isnull=True)
+        # For other actions (retrieve, update, delete), allow access to all comments
+        return Comment.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        post_uuid = request.data.get('post')
+        parent_id = request.data.get('parent')
+
+        # Get the user from the token
+        token_key = request.query_params.get('token')
+        if not token_key:
+            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch the post and optionally the parent comment
+        try:
+            post = Post.objects.get(uuid=post_uuid)
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        parent_comment = None
+        if parent_id:
+            try:
+                parent_comment = Comment.objects.get(id=parent_id)
+            except Comment.DoesNotExist:
+                return Response({'detail': 'Parent comment not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Prepare data for the serializer
+        data = request.data.copy()
+        data['post'] = post.id
+        data['user_id'] = user.id
+        if parent_comment:
+            data['parent'] = parent_comment.id
+        else:
+            data['parent'] = None
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
 
 # # LibAsset ViewSet
 # class LibAssetViewSet(viewsets.ModelViewSet):
