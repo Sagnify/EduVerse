@@ -4,12 +4,10 @@ import { z } from "zod";
 import { loginUser } from "./actions/login";
 import { useForm } from "react-hook-form";
 import { Card, CardDescription, CardHeader } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Metadata } from "next";
 import Link from "next/link";
 
 // Define the schema for the form using Zod
