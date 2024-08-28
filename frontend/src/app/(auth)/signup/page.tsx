@@ -27,6 +27,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { GenderDropdown } from "@/components/GenderDropdown";
+import { PiChalkboardTeacherLight, PiStudentLight } from "react-icons/pi";
 
 const RoleSchema = z.object({
   role: z.enum(["student", "teacher"], {
@@ -232,7 +233,8 @@ export default function SignUpPage() {
                             <FormControl>
                               <RadioGroupItem value="student" />
                             </FormControl>
-                            <FormLabel className="font-normal">
+                            <FormLabel className="font-normal flex gap-2 items-center">
+                              <PiStudentLight size={20} />
                               Student
                             </FormLabel>
                           </FormItem>
@@ -240,7 +242,8 @@ export default function SignUpPage() {
                             <FormControl>
                               <RadioGroupItem value="teacher" />
                             </FormControl>
-                            <FormLabel className="font-normal">
+                            <FormLabel className="font-normal flex gap-2 items-center">
+                              <PiChalkboardTeacherLight size={20} />
                               Teacher
                             </FormLabel>
                           </FormItem>
