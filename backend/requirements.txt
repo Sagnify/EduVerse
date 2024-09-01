@@ -53,8 +53,7 @@ pycparser==2.22
 PyJWT==2.8.0
 
 pyparsing==3.1.2
-pypiwin32==223
-PySocks==1.7.1
+PySocks==1.7
 python-dotenv==1.0.1
 python-Levenshtein==0.25.0
 pyttsx3==2.90
@@ -82,7 +81,5 @@ typing_extensions==4.9.0
 tzdata==2024.1
 uritemplate==4.1.1
 urllib3==2.2.1
-websocket-client==1.8.0
 wheel==0.42.0
 
-wsproto==1.2.0
