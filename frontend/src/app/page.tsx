@@ -1,37 +1,12 @@
 "use client";
-import { fetchUserData } from "@/core/user";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import useUserFetcher from "@/core/userFetcher";
+import Loading from "@/components/Loader";
 
 const Page = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
+  const { user, loading, error } = useUserFetcher();
   const router = useRouter();
-
-  useEffect(() => {
-    const userId = localStorage.getItem("userId");
-
-    if (userId) {
-      fetchUserData(userId)
-        .then((data) => {
-          if (data) {
-            setUser(data);
-          } else {
-            setError("User not found");
-          }
-          setLoading(false);
-        })
-        .catch((err) => {
-          setError("Failed to fetch user data");
-          setLoading(false);
-        });
-    } else {
-      setError("userId not found in localStorage");
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     if (!loading && (!user || error)) {
@@ -40,7 +15,11 @@ const Page = () => {
   }, [loading, user, error, router]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="px-24">
+        <Loading />
+      </div>
+    );
   }
 
   if (error) {
@@ -48,7 +27,7 @@ const Page = () => {
   }
 
   return (
-    <div>
+    <div className="px-24 ">
       <h1>
         Welcome, {user!.first_name} {user!.last_name}
       </h1>
