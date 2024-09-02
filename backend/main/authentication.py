@@ -4,6 +4,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenBackendError
 from django.contrib.auth import get_user_model
 
+
 class QueryParamTokenAuthentication(BaseAuthentication):
     def authenticate(self, request):  # sourcery skip: use-fstring-for-formatting
         token_key = request.query_params.get('token')  # Get token from query parameters
@@ -23,3 +24,4 @@ class QueryParamTokenAuthentication(BaseAuthentication):
             raise AuthenticationFailed('User not found.')
 
         return (user, access_token)
+    

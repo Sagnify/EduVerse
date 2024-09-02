@@ -8,6 +8,7 @@ urlpatterns = [
 
     path('users/', views.UserApiView.as_view()),
     path('token-auth', views.CustomObtainAuthToken.as_view(), name='token_auth'),
+    path('token-auth/refresh/', views.RefreshTokenView.as_view(), name='token_refresh'),
 
     path('userprofiles/student/', views.UserProfileStudentViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='userprofilestudent-list-create'),
     # path('userprofiles/student/<pk>/', views.UserProfileStudentViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='userprofilestudent-detail'),
