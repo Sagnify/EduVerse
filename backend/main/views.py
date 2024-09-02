@@ -24,12 +24,12 @@ class CustomObtainAuthToken(ObtainAuthToken):
 
         try:
             user = Token.objects.get(key=data['token']).user
-            data['user_id'] = user.id
+            # data['user_id'] = user.id
             data['is_student'] = user.profile.is_student
             data['is_teacher'] = user.profile.is_teacher
 
         except Token.DoesNotExist:
-            data['user_id'] = None
+            # data['user_id'] = None
             data['is_student'] = False
             data['is_teacher'] = False
 
