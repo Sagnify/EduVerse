@@ -20,6 +20,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .jwt import create_jwt_for_user
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.exceptions import InvalidToken
 
 class CustomObtainAuthToken(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
@@ -52,14 +54,12 @@ class UserApiView(ListCreateAPIView):
 
     def list(self, request, *args, **kwargs):
         user_id = request.query_params.get('user_id')
+        username = request.query_params.get('username')
+
         if user_id:
             user = get_object_or_404(User, id=user_id)
-            try:
-                user_data = self.get_serializer(user).data
-                return Response(user_data)
-            except Exception as e:
-                logger.error(f"Error serializing user {user.id}: {str(e)}")
-                return Response({"error": "Error retrieving user data"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        elif username:
+            user = get_object_or_404(User, username=username)
         else:
             queryset = self.get_queryset()
             data = []
@@ -71,6 +71,13 @@ class UserApiView(ListCreateAPIView):
                     logger.error(f"Error serializing user {user.id}: {str(e)}")
             return Response(data)
 
+        try:
+            user_data = self.get_serializer(user).data
+            return Response(user_data)
+        except Exception as e:
+            logger.error(f"Error serializing user {user.id}: {str(e)}")
+            return Response({"error": "Error retrieving user data"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -80,6 +87,7 @@ class UserApiView(ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except serializers.ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # UserProfileTeacher ViewSet with Custom Queryset Filtering
@@ -226,15 +234,13 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
+            token = AccessToken(token_key)  # Verify and decode the JWT token
+            user_id = token['user_id']  # Extract user ID from the token
+            request.data._mutable = True  # Make request.data mutable
+            request.data['user'] = user_id
+            request.data._mutable = False  # Make request.data immutable
+        except InvalidToken:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Include the user ID in the data
-        request.data._mutable = True  # Make request.data mutable
-        request.data['user'] = user.id
-        request.data._mutable = False  # Make request.data immutable
 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -250,9 +256,9 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
+            token = AccessToken(token_key)
+            user_id = token['user_id']
+        except InvalidToken:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -261,17 +267,17 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         # Remove any existing downvote
-        Downvote.objects.filter(user=user, post=post).delete()
+        Downvote.objects.filter(user_id=user_id, post=post).delete()
 
         # Toggle the upvote
-        existing_upvote = Upvote.objects.filter(user=user, post=post).first()
+        existing_upvote = Upvote.objects.filter(user_id=user_id, post=post).first()
         if existing_upvote:
             # Remove existing upvote
             existing_upvote.delete()
             return Response({'detail': 'Upvote removed.'}, status=status.HTTP_204_NO_CONTENT)
         else:
             # Add new upvote
-            Upvote.objects.create(user=user, post=post)
+            Upvote.objects.create(user_id=user_id, post=post)
             return Response({'detail': 'Post upvoted.'}, status=status.HTTP_201_CREATED)
 
 
@@ -282,9 +288,9 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
+            token = AccessToken(token_key)
+            user_id = token['user_id']
+        except InvalidToken:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -293,19 +299,18 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         # Remove any existing upvote
-        Upvote.objects.filter(user=user, post=post).delete()
+        Upvote.objects.filter(user_id=user_id, post=post).delete()
 
         # Toggle the downvote
-        existing_downvote = Downvote.objects.filter(user=user, post=post).first()
+        existing_downvote = Downvote.objects.filter(user_id=user_id, post=post).first()
         if existing_downvote:
             # Remove existing downvote
             existing_downvote.delete()
             return Response({'detail': 'Downvote removed.'}, status=status.HTTP_204_NO_CONTENT)
         else:
             # Add new downvote
-            Downvote.objects.create(user=user, post=post)
+            Downvote.objects.create(user_id=user_id, post=post)
             return Response({'detail': 'Post downvoted.'}, status=status.HTTP_201_CREATED)
-
     
 
 
@@ -333,9 +338,9 @@ class CommentViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
+            token = AccessToken(token_key)  # Verify and decode the JWT token
+            user_id = token['user_id']  # Extract user ID from the token
+        except InvalidToken:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Fetch the post and optionally the parent comment
@@ -354,7 +359,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         # Prepare data for the serializer
         data = request.data.copy()
         data['post'] = post.id
-        data['user_id'] = user.id
+        data['user_id'] = user_id
         
         if parent_comment:
             data['parent'] = parent_comment.id
@@ -396,19 +401,22 @@ class SeriesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
     queryset = Series.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        token_key = request.query_params.get('token')
+    def get_token_user(self):
+        token_key = self.request.query_params.get('token')
         if not token_key:
-            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            raise NotAuthenticated(detail='Token query parameter is required.')
 
         try:
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
-            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+            token = AccessToken(token_key)  # Verify and decode the JWT token
+            return token['user_id']  # Extract user ID from the token
+        except InvalidToken:
+            raise NotAuthenticated(detail='Invalid token.')
+
+    def create(self, request, *args, **kwargs):
+        user_id = self.get_token_user()
 
         data = request.data.copy()
-        data['user'] = user.id  # Add user ID to the data
+        data['user'] = user_id  # Add user ID to the data
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -417,19 +425,8 @@ class SeriesViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
-        token_key = self.request.query_params.get('token')
-        if not token_key:
-            raise NotAuthenticated(detail='Token is required.')
-
-        try:
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
-            raise NotAuthenticated(detail='Invalid token.')
-
-        serializer.save(user=user)
-   
-
+        user_id = self.get_token_user()
+        serializer.save(user_id=user_id)
 
 
 class LectureViewSet(viewsets.ModelViewSet):
@@ -444,16 +441,16 @@ class LectureViewSet(viewsets.ModelViewSet):
             raise NotAuthenticated(detail='Token query parameter is required.')
 
         try:
-            token = Token.objects.get(key=token_key)
-            return token.user
-        except Token.DoesNotExist:
+            token = AccessToken(token_key)  # Verify and decode the JWT token
+            return token['user_id']  # Extract user ID from the token
+        except InvalidToken:
             raise NotAuthenticated(detail='Invalid token.')
 
     def create(self, request, *args, **kwargs):
-        user = self.get_token_user()
+        user_id = self.get_token_user()
 
         data = request.data.copy()
-        data['user'] = user.id  # Add user ID to the data
+        data['user'] = user_id  # Add user ID to the data
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -462,14 +459,14 @@ class LectureViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
-        user = self.get_token_user()
-        serializer.save(user=user)
+        user_id = self.get_token_user()
+        serializer.save(user_id=user_id)
 
     def update(self, request, *args, **kwargs):
-        user = self.get_token_user()
+        user_id = self.get_token_user()
 
         instance = self.get_object()
-        if instance.user != user:
+        if instance.user_id != user_id:
             raise PermissionDenied(detail='You do not have permission to edit this lecture.')
 
         serializer = self.get_serializer(instance, data=request.data, partial=kwargs.get('partial', False))
@@ -482,20 +479,14 @@ class LectureViewSet(viewsets.ModelViewSet):
         return self.update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        user = self.get_token_user()
+        user_id = self.get_token_user()
 
         instance = self.get_object()
-        if instance.user != user:
+        if instance.user_id != user_id:
             raise PermissionDenied(detail='You do not have permission to delete this lecture.')
 
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# # LibAsset ViewSet
-# class LibAssetViewSet(viewsets.ModelViewSet):
-#     queryset = LibAsset.objects.all()
-#     serializer_class = LibAssetSerializer
 
 
 class StreamViewSet(viewsets.ModelViewSet):
@@ -515,6 +506,13 @@ class StandardViewSet(viewsets.ModelViewSet):
     serializer_class = StandardSerializer
     authentication_classes = []
     permission_classes = [AllowAny]
+
+
+# # LibAsset ViewSet
+# class LibAssetViewSet(viewsets.ModelViewSet):
+#     queryset = LibAsset.objects.all()
+#     serializer_class = LibAssetSerializer
+
 
 # # SaveLater ViewSet
 # class SaveLaterViewSet(viewsets.ModelViewSet):
