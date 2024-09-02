@@ -1,5 +1,5 @@
 export function fetchUserData(userId: string): Promise<User> {
-  const url = `http://127.0.0.1:8000/api/users/?user_id=${userId}`;
+  const url = `https://eduverse-a4l5.onrender.com/api/users/?user_id=${userId}`;
 
   return fetch(url)
     .then((response) => {
