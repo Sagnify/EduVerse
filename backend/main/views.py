@@ -12,16 +12,18 @@ from .permission import IsOwnerOrReadOnly
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotAuthenticated
+from rest_framework.exceptions import NotAuthenticated, AuthenticationFailed
 from django.core.exceptions import PermissionDenied
 from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .jwt import create_jwt_for_user
+from .jwt import create_jwt_for_user, decode_refresh_token
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework.views import APIView
+
 
 class CustomObtainAuthToken(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
@@ -46,6 +48,34 @@ class CustomObtainAuthToken(TokenObtainPairView):
         else:
             return Response({'detail': 'Invalid credentials'}, status=400)
     
+class RefreshTokenView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get('refresh')
+        
+        if not refresh_token:
+            return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Decode the refresh token
+            token = RefreshToken(refresh_token)
+            user_id = token['user_id']
+            
+            # Fetch the user object from user_id
+            user = User.objects.get(id=user_id)
+            
+            # Generate a new access token
+            new_access_token = AccessToken.for_user(user)
+            
+            return Response({
+                'access': str(new_access_token),
+            })
+        
+        except (InvalidToken, User.DoesNotExist) as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+
 class UserApiView(ListCreateAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
