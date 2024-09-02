@@ -8,10 +8,11 @@ from django.contrib.auth.models import User
 from rest_framework import generics
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .authentication import QueryParamTokenAuthentication
+from .permission import IsOwnerOrReadOnly
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.exceptions import NotAuthenticated
 from django.core.exceptions import PermissionDenied
 from rest_framework import status
 from rest_framework.exceptions import NotFound
@@ -302,7 +303,7 @@ class PostViewSet(viewsets.ModelViewSet):
 ## Comment ViewSet
 class CommentViewSet(viewsets.ModelViewSet):
     authentication_classes = [QueryParamTokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
@@ -345,6 +346,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         data = request.data.copy()
         data['post'] = post.id
         data['user_id'] = user.id
+        
         if parent_comment:
             data['parent'] = parent_comment.id
         else:
@@ -379,6 +381,105 @@ class CommentViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class SeriesViewSet(viewsets.ModelViewSet):
+    serializer_class = SeriesSerializer
+    authentication_classes = [QueryParamTokenAuthentication]
+    permission_classes = [IsOwnerOrReadOnly]
+    queryset = Series.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        token_key = request.query_params.get('token')
+        if not token_key:
+            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = request.data.copy()
+        data['user'] = user.id  # Add user ID to the data
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        token_key = self.request.query_params.get('token')
+        if not token_key:
+            raise NotAuthenticated(detail='Token is required.')
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            raise NotAuthenticated(detail='Invalid token.')
+
+        serializer.save(user=user)
+   
+
+
+
+class LectureViewSet(viewsets.ModelViewSet):
+    serializer_class = LectureSerializer
+    authentication_classes = [QueryParamTokenAuthentication]
+    permission_classes = [IsOwnerOrReadOnly]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    def get_queryset(self):
+        # Get the user from the token
+        token_key = self.request.query_params.get('token')
+        if not token_key:
+            raise NotAuthenticated(detail='Token query parameter is required.')
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            raise NotAuthenticated(detail='Invalid token.')
+
+        # Filter lectures by the user who owns them
+        return Lecture.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        token_key = self.request.query_params.get('token')
+        if not token_key:
+            raise NotAuthenticated(detail='Token is required.')
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            raise NotAuthenticated(detail='Invalid token.')
+
+        # Save the serializer with the user
+        serializer.save(user=user)
+
+    def perform_update(self, serializer):
+        token_key = self.request.query_params.get('token')
+        if not token_key:
+            raise NotAuthenticated(detail='Token is required.')
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            raise NotAuthenticated(detail='Invalid token.')
+
+        # Ensure that the user can only update their own lectures
+        instance = self.get_object()
+        if instance.user != user:
+            raise PermissionDenied(detail='You do not have permission to edit this lecture.')
+
+        # Save the serializer with the user
+        serializer.save(user=user)
 
 
 # # LibAsset ViewSet
@@ -386,25 +487,24 @@ class CommentViewSet(viewsets.ModelViewSet):
 #     queryset = LibAsset.objects.all()
 #     serializer_class = LibAssetSerializer
 
-# # Lecture ViewSet
-# class LectureViewSet(viewsets.ModelViewSet):
-#     queryset = Lecture.objects.all()
-#     serializer_class = LectureSerializer
 
-# # Stream ViewSet
-# class StreamViewSet(viewsets.ModelViewSet):
-#     queryset = Stream.objects.all()
-#     serializer_class = StreamSerializer
+class StreamViewSet(viewsets.ModelViewSet):
+    queryset = Stream.objects.all()
+    serializer_class = StreamSerializer
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
-# # Subject ViewSet
-# class SubjectViewSet(viewsets.ModelViewSet):
-#     queryset = Subject.objects.all()
-#     serializer_class = SubjectSerializer
+class SubjectViewSet(viewsets.ModelViewSet):
+    queryset = Subject.objects.all()
+    serializer_class = SubjectSerializer
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
-# # Standard ViewSet
-# class StandardViewSet(viewsets.ModelViewSet):
-#     queryset = Standard.objects.all()
-#     serializer_class = StandardSerializer
+class StandardViewSet(viewsets.ModelViewSet):
+    queryset = Standard.objects.all()
+    serializer_class = StandardSerializer
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
 # # SaveLater ViewSet
 # class SaveLaterViewSet(viewsets.ModelViewSet):
