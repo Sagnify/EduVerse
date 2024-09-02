@@ -6,19 +6,21 @@ import { useState } from "react";
 import UserButton from "./UserButton";
 import SearchField from "./searchField";
 import Icon from "./Icon";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const router = useRouter(); // Initialize useRouter
 
   return (
     <header className="sticky top-0 z-50 flex w-full flex-col items-center justify-center bg-card shadow-sm md:px-12">
       <div className="mx-auto flex w-full items-center justify-between px-9 py-3">
-        <Link
-          href="/"
-          className="flex items-center text-2xl font-bold text-primary"
+        <div
+          onClick={() => router.push("/home")} // Redirect to home page
+          className="flex items-center cursor-pointer text-2xl font-bold text-primary"
         >
           <Icon className="" size={30} />
-        </Link>
+        </div>
         <div className="flex items-center gap-4">
           <Button
             className="block xl:hidden"
@@ -31,7 +33,7 @@ export default function Navbar() {
             <SearchField />
           </div>
           <div className="flex gap-1 items-center">
-            <Link href={`/`}>
+            <Link href={`/home`}>
               <Button variant="ghost" className="px-2">
                 Home
               </Button>

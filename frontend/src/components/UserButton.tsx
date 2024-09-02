@@ -16,49 +16,32 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import logout from "@/app/(auth)/logout";
-import { fetchUserData } from "@/core/user";
+import useUserFetcher from "@/core/userFetcher";
 import Loading from "./Loader";
+import { useRouter } from "next/navigation";
 
 interface UserButtonProps {
   className?: string;
 }
 
 export default function UserButton({ className }: UserButtonProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { user, loading, error } = useUserFetcher();
   const { theme, setTheme } = useTheme();
+  const router = useRouter(); // Initialize router
 
-  useEffect(() => {
-    const userId = localStorage.getItem("userId");
+  const logout = () => {
+    // Remove token from local storage
+    localStorage.removeItem("token");
 
-    if (userId) {
-      fetchUserData(userId)
-        .then((data) => {
-          if (data) {
-            setUser(data);
-          } else {
-            setError("User not found");
-          }
-          setLoading(false);
-        })
-        .catch(() => {
-          setError("Failed to fetch user data");
-          setLoading(false);
-        });
-    } else {
-      setError("userId not found in localStorage");
-      setLoading(false);
-    }
-  }, []);
+    // Redirect to homepage
+    router.push("/");
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className={cn("flex-none rounded-full", className)}>
-          {loading ? <Loading/> : user ? user.username : "User"}
+          {loading ? <Loading /> : user ? user.username : "User"}
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
@@ -66,7 +49,7 @@ export default function UserButton({ className }: UserButtonProps) {
           <>
             <DropdownMenuLabel>Hello {user.username}!</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <Link href={`/users/${user.username}`}>
+            <Link href={`/user/${user.username}`}>
               <DropdownMenuItem>
                 <UserIcon className="mr-2 size-4" />
                 Profile
@@ -98,11 +81,7 @@ export default function UserButton({ className }: UserButtonProps) {
               </DropdownMenuPortal>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                logout();
-              }}
-            >
+            <DropdownMenuItem onClick={logout}>
               <LogOutIcon className="mr-2 size-4" />
               Logout
             </DropdownMenuItem>

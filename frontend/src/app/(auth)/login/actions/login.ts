@@ -26,8 +26,8 @@ export async function loginUser(formData: {
     console.log(resData);
 
     // Store token and redirect
-    localStorage.setItem("token", resData.token);
-    localStorage.setItem("userId", resData.user_id);
+    localStorage.setItem("token", resData.access);
+    // localStorage.setItem("userId", resData.user_id);
 
     return { success: true, message: "Login successful!" };
   } catch (error: any) {

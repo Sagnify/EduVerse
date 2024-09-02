@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation"; // Import useRouter
 import Link from "next/link";
 
 // Define the schema for the form using Zod
@@ -22,6 +23,7 @@ export default function Login() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter(); // Initialize useRouter
 
   const {
     register,
@@ -39,8 +41,8 @@ export default function Login() {
 
     if (result.success) {
       setSuccessMessage(result.message);
-      // Redirect to /mytodos
-      window.location.href = "/";
+      // Redirect to /home/page.tsx
+      router.push("/home");
       console.log("Login successful!");
     } else {
       setErrorMessage(result.message);
@@ -51,7 +53,7 @@ export default function Login() {
 
   return (
     <div className="flex items-center justify-center text-center w-full h-screen p-5 bg-gradient-to-r from-violet-700 to-pink-200">
-      <Card className=" p-5 w-96 shadow-xl border-0">
+      <Card className="p-5 w-96 shadow-xl border-0">
         <CardHeader>
           <CardHeader className="text-3xl font-bold m-0 p-0">Login</CardHeader>
           <CardDescription className="font-bold">
@@ -65,7 +67,6 @@ export default function Login() {
             </p>
           )}
           <div className="mb-4">
-            {/* <Label htmlFor="username">Username</Label> */}
             <Input
               id="username"
               {...register("username")}
@@ -75,7 +76,6 @@ export default function Login() {
           </div>
 
           <div className="mb-4">
-            {/* <Label htmlFor="password">Password</Label> */}
             {errors.password && (
               <p className="text-red-400 mb-2 text-xs font-bold">
                 {errors.password.message}
