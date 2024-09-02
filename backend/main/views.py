@@ -471,8 +471,10 @@ class LectureViewSet(viewsets.ModelViewSet):
             raise NotAuthenticated(detail='Token query parameter is required.')
 
         try:
-            token = AccessToken(token_key)  # Verify and decode the JWT token
-            return token['user_id']  # Extract user ID from the token
+            # Verify and decode the JWT token
+            token = AccessToken(token_key)
+            user_id = token['user_id']  # Extract user ID from the token
+            return user_id
         except InvalidToken:
             raise NotAuthenticated(detail='Invalid token.')
 
@@ -490,7 +492,7 @@ class LectureViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user_id = self.get_token_user()
-        serializer.save(user_id=user_id)
+        serializer.save(user_id=user_id)  # Save user ID in the Lecture instance
 
     def update(self, request, *args, **kwargs):
         user_id = self.get_token_user()

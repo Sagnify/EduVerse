@@ -201,25 +201,34 @@ class LectureSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lecture
-        fields = ['id', 'lecture_url', 'thumbnail_url', 'title', 'description', 'stream', 'subject', 'standard', 'asset_sel', 'rating', 'visibility', 'is_verified', 'series']
-    
+        fields = [
+            'id', 'lecture_url', 'thumbnail_url', 'title', 'description', 
+            'stream', 'subject', 'standard', 'asset_sel', 'rating', 
+            'visibility', 'is_verified', 'series'
+        ]
+
     def __init__(self, *args, **kwargs):
         super(LectureSerializer, self).__init__(*args, **kwargs)
         request = self.context.get('request', None)
-        
+
         if request:
             user = request.user
-            
+
             # Filter series queryset based on the logged-in user
             self.fields['series'].queryset = Series.objects.filter(user=user)
-            
-            # Only filter subjects if stream is available
+
+            # Filter subjects based on the selected stream
             if request.method in ['POST', 'PUT', 'PATCH']:
-                stream_id = request.data.get('stream') or (self.instance.stream.id if self.instance and self.instance.stream else None)
+                stream_id = request.data.get('stream')
                 if stream_id:
-                    self.fields['subject'].queryset = Subject.objects.filter(stream_id=stream_id)
+                    # Ensure stream_id is a valid integer
+                    try:
+                        stream_id = int(stream_id)
+                        self.fields['subject'].queryset = Subject.objects.filter(stream_id=stream_id)
+                    except ValueError:
+                        self.fields['subject'].queryset = Subject.objects.none()
                 else:
-                    self.fields['subject'].queryset = Subject.objects.none()
+                    self.fields['subject'].queryset = Subject.objects.all()
             else:
                 # For GET requests, do not filter subjects
                 self.fields['subject'].queryset = Subject.objects.all()
