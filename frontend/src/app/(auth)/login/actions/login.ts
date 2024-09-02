@@ -5,13 +5,16 @@ export async function loginUser(formData: {
   password: string;
 }) {
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/token-auth", {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const res = await fetch(
+      "https://eduverse-a4l5.onrender.com/api/token-auth",
+      {
+        method: "POST",
+        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!res.ok) {
       // Handle non-OK responses here
