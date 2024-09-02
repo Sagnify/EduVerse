@@ -16,24 +16,33 @@ from rest_framework.exceptions import NotAuthenticated
 from django.core.exceptions import PermissionDenied
 from rest_framework import status
 from rest_framework.exceptions import NotFound
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from .jwt import create_jwt_for_user
 
-class CustomObtainAuthToken(ObtainAuthToken):
+class CustomObtainAuthToken(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        data = response.data
+        # sourcery skip: remove-unnecessary-else, swap-if-else-branches
+        username = request.data.get('username')
+        password = request.data.get('password')
 
-        try:
-            user = Token.objects.get(key=data['token']).user
-            # data['user_id'] = user.id
-            data['is_student'] = user.profile.is_student
-            data['is_teacher'] = user.profile.is_teacher
+        user = authenticate(username=username, password=password)
 
-        except Token.DoesNotExist:
-            # data['user_id'] = None
-            data['is_student'] = False
-            data['is_teacher'] = False
-
-        return Response(data)
+        if user is not None:
+            # Generate JWT tokens for the authenticated user
+            tokens = create_jwt_for_user(user)
+            
+            # Prepare response data
+            response_data = {
+                'refresh': tokens['refresh'],
+                'access': tokens['access'],
+                'is_student': getattr(user.profile, 'is_student', False),
+                'is_teacher': getattr(user.profile, 'is_teacher', False),
+            }
+            return Response(response_data, status=200)
+        else:
+            return Response({'detail': 'Invalid credentials'}, status=400)
     
 class UserApiView(ListCreateAPIView):
     serializer_class = UserSerializer
