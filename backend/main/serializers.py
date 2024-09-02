@@ -192,30 +192,63 @@ class CommentSerializer(serializers.ModelSerializer):
         validated_data.pop('user', None)
         return super().update(instance, validated_data)
 
+
+class LectureSerializer(serializers.ModelSerializer):
+    series = serializers.PrimaryKeyRelatedField(queryset=Series.objects.none(), required=True)
+    rating = serializers.FloatField(read_only=True)
+    is_verified = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Lecture
+        fields = ['id', 'lecture_url', 'thumbnail_url', 'title', 'description', 'stream', 'subject', 'standard', 'asset_sel', 'rating', 'visibility', 'is_verified', 'series']
+    
+    def __init__(self, *args, **kwargs):
+        super(LectureSerializer, self).__init__(*args, **kwargs)
+        request = self.context.get('request', None)
+        if request:
+            self.fields['series'].queryset = Series.objects.filter(user=request.user)
+
+
+class SeriesSerializer(serializers.ModelSerializer):
+    lecture_count = serializers.IntegerField(read_only=True)
+    user = serializers.ReadOnlyField(source='user.username')  # Show username or other user info
+
+    class Meta:
+        model = Series
+        fields = ['id', 'title', 'description', 'created_at', 'user', 'lecture_count']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['lecture_count'] = instance.lectures.count()  # Use 'lectures' based on the related_name
+        return representation
+   
+    
+
+class StreamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stream
+        fields = ['id', 'name']
+
+class SubjectSerializer(serializers.ModelSerializer):
+    stream = serializers.CharField(source='stream.name', read_only=True)
+    stream_id = serializers.PrimaryKeyRelatedField(queryset=Stream.objects.all(), source='stream')
+
+    class Meta:
+        model = Subject
+        fields = ['id', 'name', 'stream', 'stream_id']
+
+class StandardSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Standard
+        fields = ['id', 'name']  # Add 'subject' and 'stream' fields if relationships are included
+
+
 # class LibAssetSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = LibAsset
 #         fields = '__all__'
 
-# class LectureSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Lecture
-#         fields = '__all__'
-
-# class StreamSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Stream
-#         fields = '__all__'
-
-# class SubjectSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Subject
-#         fields = '__all__'
-
-# class StandardSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Standard
-#         fields = '__all__'
 
 # class SaveLaterSerializer(serializers.ModelSerializer):
 #     class Meta:

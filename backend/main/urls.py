@@ -22,20 +22,23 @@ urlpatterns = [
     path('comments/', views.CommentViewSet.as_view({'get': 'list', 'post': 'create'}), name='comment-list-create'),
     path('comments/<int:pk>/', views.CommentViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='comment-detail'),
 
+    path('series/', views.SeriesViewSet.as_view({'get': 'list', 'post': 'create'}), name='series-list-create'),
+    path('series/<int:pk>/', views.SeriesViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='series-detail'),
+
     # path('libassets/', LibAssetListCreateView.as_view(), name='libasset-list-create'),
     # path('libassets/<int:pk>/', LibAssetDetailView.as_view(), name='libasset-detail'),
 
-    # path('lectures/', LectureListCreateView.as_view(), name='lecture-list-create'),
-    # path('lectures/<int:pk>/', LectureDetailView.as_view(), name='lecture-detail'),
+    path('lectures/', views.LectureViewSet.as_view({'get': 'list', 'post': 'create'}), name='lecture-list-create'),
+    path('lectures/<int:pk>/', views.LectureViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='lecture-detail'),
 
-    # path('streams/', StreamListCreateView.as_view(), name='stream-list-create'),
-    # path('streams/<int:pk>/', StreamDetailView.as_view(), name='stream-detail'),
+    path('streams/', views.StreamViewSet.as_view({'get': 'list', 'post': 'create'}), name='stream-list'),
+    path('streams/<int:pk>/', views.StreamViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='stream-detail'),
 
-    # path('subjects/', SubjectListCreateView.as_view(), name='subject-list-create'),
-    # path('subjects/<int:pk>/', SubjectDetailView.as_view(), name='subject-detail'),
+    path('subjects/', views.SubjectViewSet.as_view({'get': 'list', 'post': 'create'}), name='subject-list'),
+    path('subjects/<int:pk>/', views.SubjectViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='subject-detail'),
 
-    # path('standards/', StandardListCreateView.as_view(), name='standard-list-create'),
-    # path('standards/<int:pk>/', StandardDetailView.as_view(), name='standard-detail'),
+    path('standards/', views.StandardViewSet.as_view({'get': 'list', 'post': 'create'}), name='standard-list'),
+    path('standards/<int:pk>/', views.StandardViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='standard-detail'),
 
     # path('savelater/', SaveLaterListCreateView.as_view(), name='savelater-list-create'),
     # path('savelater/<int:pk>/', SaveLaterDetailView.as_view(), name='savelater-detail'),

@@ -52,15 +52,22 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class Stream(models.Model):
     name = models.CharField(max_length=100)
+    def __str__(self):
+       return self.name
 
 class Subject(models.Model):
     name = models.CharField(max_length=100)
     stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
 
+    def __str__(self):
+       return self.name
+
 class Standard(models.Model):
     name = models.CharField(max_length=100)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
+    # subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    # stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
+    def __str__(self):
+       return self.name
 
 class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -104,18 +111,38 @@ class LibAsset(models.Model):
     standard = models.ForeignKey(Standard, on_delete=models.CASCADE)
     is_verified = models.BooleanField(default=False)
 
+class Series(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.title
+    
+
 class Lecture(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    thumbnail_url = models.URLField()
+    lecture_url = models.URLField()
     title = models.CharField(max_length=255)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     standard = models.ForeignKey(Standard, on_delete=models.CASCADE)
     views = models.IntegerField(default=0)
-    asset_sel = models.ForeignKey(LibAsset, on_delete=models.CASCADE)
-    rating = models.DecimalField(max_digits=3, decimal_places=2)
+    asset_sel = models.ForeignKey(LibAsset, on_delete=models.CASCADE, blank=True, null=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
     visibility = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=False)
+    series = models.ForeignKey(Series, on_delete=models.CASCADE, related_name='lectures')
+
+    def __str__(self):
+        return self.title
+
+
 
 class SaveLater(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
