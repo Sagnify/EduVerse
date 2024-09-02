@@ -429,16 +429,19 @@ class LectureViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
     queryset = Lecture.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        token_key = request.query_params.get('token')
+    def get_token_user(self):
+        token_key = self.request.query_params.get('token')
         if not token_key:
-            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            raise NotAuthenticated(detail='Token query parameter is required.')
 
         try:
             token = Token.objects.get(key=token_key)
-            user = token.user
+            return token.user
         except Token.DoesNotExist:
-            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+            raise NotAuthenticated(detail='Invalid token.')
+
+    def create(self, request, *args, **kwargs):
+        user = self.get_token_user()
 
         data = request.data.copy()
         data['user'] = user.id  # Add user ID to the data
@@ -450,28 +453,11 @@ class LectureViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
-        token_key = self.request.query_params.get('token')
-        if not token_key:
-            raise NotAuthenticated(detail='Token is required.')
-
-        try:
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
-            raise NotAuthenticated(detail='Invalid token.')
-
+        user = self.get_token_user()
         serializer.save(user=user)
 
     def update(self, request, *args, **kwargs):
-        token_key = request.query_params.get('token')
-        if not token_key:
-            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
-            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+        user = self.get_token_user()
 
         instance = self.get_object()
         if instance.user != user:
@@ -487,15 +473,7 @@ class LectureViewSet(viewsets.ModelViewSet):
         return self.update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        token_key = request.query_params.get('token')
-        if not token_key:
-            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            token = Token.objects.get(key=token_key)
-            user = token.user
-        except Token.DoesNotExist:
-            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+        user = self.get_token_user()
 
         instance = self.get_object()
         if instance.user != user:

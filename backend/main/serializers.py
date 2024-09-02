@@ -195,6 +195,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class LectureSerializer(serializers.ModelSerializer):
     series = serializers.PrimaryKeyRelatedField(queryset=Series.objects.none(), required=True)
+    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.none(), required=True)
     rating = serializers.FloatField(read_only=True)
     is_verified = serializers.BooleanField(read_only=True)
 
@@ -205,8 +206,24 @@ class LectureSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super(LectureSerializer, self).__init__(*args, **kwargs)
         request = self.context.get('request', None)
+        
         if request:
-            self.fields['series'].queryset = Series.objects.filter(user=request.user)
+            user = request.user
+            
+            # Filter series queryset based on the logged-in user
+            self.fields['series'].queryset = Series.objects.filter(user=user)
+            
+            # Only filter subjects if stream is available
+            if request.method in ['POST', 'PUT', 'PATCH']:
+                stream_id = request.data.get('stream') or (self.instance.stream.id if self.instance and self.instance.stream else None)
+                if stream_id:
+                    self.fields['subject'].queryset = Subject.objects.filter(stream_id=stream_id)
+                else:
+                    self.fields['subject'].queryset = Subject.objects.none()
+            else:
+                # For GET requests, do not filter subjects
+                self.fields['subject'].queryset = Subject.objects.all()
+
 
 
 class SeriesSerializer(serializers.ModelSerializer):
