@@ -214,24 +214,28 @@ class LectureSerializer(serializers.ModelSerializer):
         if request:
             user = request.user
 
-            # Filter series queryset based on the logged-in user
-            self.fields['series'].queryset = Series.objects.filter(user=user)
+            if user.is_authenticated:
+                # Filter series queryset based on the logged-in user
+                self.fields['series'].queryset = Series.objects.filter(user=user)
 
-            # Filter subjects based on the selected stream
-            if request.method in ['POST', 'PUT', 'PATCH']:
-                stream_id = request.data.get('stream')
-                if stream_id:
-                    # Ensure stream_id is a valid integer
-                    try:
-                        stream_id = int(stream_id)
-                        self.fields['subject'].queryset = Subject.objects.filter(stream_id=stream_id)
-                    except ValueError:
-                        self.fields['subject'].queryset = Subject.objects.none()
+                # Filter subjects based on the selected stream
+                if request.method in ['POST', 'PUT', 'PATCH']:
+                    stream_id = request.data.get('stream')
+                    if stream_id:
+                        try:
+                            stream_id = int(stream_id)
+                            self.fields['subject'].queryset = Subject.objects.filter(stream_id=stream_id)
+                        except (ValueError, TypeError):
+                            self.fields['subject'].queryset = Subject.objects.none()
+                    else:
+                        self.fields['subject'].queryset = Subject.objects.all()
                 else:
+                    # For GET requests, do not filter subjects
                     self.fields['subject'].queryset = Subject.objects.all()
             else:
-                # For GET requests, do not filter subjects
-                self.fields['subject'].queryset = Subject.objects.all()
+                # Handle the case where the user is not authenticated
+                self.fields['series'].queryset = Series.objects.none()
+                self.fields['subject'].queryset = Subject.objects.none()
 
 
 

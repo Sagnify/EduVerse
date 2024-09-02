@@ -492,7 +492,7 @@ class LectureViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user_id = self.get_token_user()
-        serializer.save(user_id=user_id)  # Save user ID in the Lecture instance
+        serializer.save(user_id=user_id)
 
     def update(self, request, *args, **kwargs):
         user_id = self.get_token_user()
@@ -519,6 +519,7 @@ class LectureViewSet(viewsets.ModelViewSet):
 
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class StreamViewSet(viewsets.ModelViewSet):
