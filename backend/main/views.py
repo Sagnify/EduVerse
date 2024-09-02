@@ -427,26 +427,27 @@ class LectureViewSet(viewsets.ModelViewSet):
     serializer_class = LectureSerializer
     authentication_classes = [QueryParamTokenAuthentication]
     permission_classes = [IsOwnerOrReadOnly]
+    queryset = Lecture.objects.all()
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        return context
-
-    def get_queryset(self):
-        # Get the user from the token
-        token_key = self.request.query_params.get('token')
+    def create(self, request, *args, **kwargs):
+        token_key = request.query_params.get('token')
         if not token_key:
-            raise NotAuthenticated(detail='Token query parameter is required.')
+            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             token = Token.objects.get(key=token_key)
             user = token.user
         except Token.DoesNotExist:
-            raise NotAuthenticated(detail='Invalid token.')
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Filter lectures by the user who owns them
-        return Lecture.objects.filter(user=user)
+        data = request.data.copy()
+        data['user'] = user.id  # Add user ID to the data
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
         token_key = self.request.query_params.get('token')
@@ -459,27 +460,49 @@ class LectureViewSet(viewsets.ModelViewSet):
         except Token.DoesNotExist:
             raise NotAuthenticated(detail='Invalid token.')
 
-        # Save the serializer with the user
         serializer.save(user=user)
 
-    def perform_update(self, serializer):
-        token_key = self.request.query_params.get('token')
+    def update(self, request, *args, **kwargs):
+        token_key = request.query_params.get('token')
         if not token_key:
-            raise NotAuthenticated(detail='Token is required.')
+            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             token = Token.objects.get(key=token_key)
             user = token.user
         except Token.DoesNotExist:
-            raise NotAuthenticated(detail='Invalid token.')
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Ensure that the user can only update their own lectures
         instance = self.get_object()
         if instance.user != user:
             raise PermissionDenied(detail='You do not have permission to edit this lecture.')
 
-        # Save the serializer with the user
-        serializer.save(user=user)
+        serializer = self.get_serializer(instance, data=request.data, partial=kwargs.get('partial', False))
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        token_key = request.query_params.get('token')
+        if not token_key:
+            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        instance = self.get_object()
+        if instance.user != user:
+            raise PermissionDenied(detail='You do not have permission to delete this lecture.')
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # # LibAsset ViewSet
