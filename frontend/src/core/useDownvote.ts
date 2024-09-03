@@ -4,6 +4,7 @@ import { useState } from "react";
 
 const useDownvote = (
   postId: string,
+  initialVoteCount: number,
   initialHasDownvoted: boolean,
   setTotalVote: React.Dispatch<React.SetStateAction<number>> // Accept setTotalVote
 ) => {

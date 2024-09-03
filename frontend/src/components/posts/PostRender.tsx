@@ -5,44 +5,25 @@ import { formatReletiveDate } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { ChevronsDown, ChevronsUp } from "lucide-react";
 import useUpvote from "@/core/useUpvote";
-import useDownvote from "@/core/useDownvote";
+import useDownvote from "@/core/useDownvote"; // Import the useDownvote hook
 
 const Post: React.FC<PostProps> = ({ post }) => {
+  // Lift the totalVote state up to the Post component
   const [totalVote, setTotalVote] = useState(post.total_vote);
-  const [isUpvoted, setIsUpvoted] = useState(post.has_upvoted);
-  const [isDownvoted, setIsDownvoted] = useState(post.has_downvoted);
 
-  const useHandleUpvote = async () => {
-    if (!isUpvoted) {
-      if (isDownvoted) {
-        setIsDownvoted(false);
-        setTotalVote((prev) => prev + 1); // Adjust vote count when switching from downvote to upvote
-      }
-      setIsUpvoted(true);
-      setTotalVote((prev) => prev + 1);
-    } else {
-      setIsUpvoted(false);
-      setTotalVote((prev) => prev - 1);
-    }
+  const { isUpvoted, handleUpvote } = useUpvote(
+    post.uuid,
+    totalVote, // Pass the lifted totalVote state
+    post.has_upvoted,
+    setTotalVote // Pass setTotalVote to update the vote count
+  );
 
-    await useUpvote(post.uuid, isUpvoted, setTotalVote); // Correct number of arguments
-  };
-
-  const useHandleDownvote = async () => {
-    if (!isDownvoted) {
-      if (isUpvoted) {
-        setIsUpvoted(false);
-        setTotalVote((prev) => prev - 1); // Adjust vote count when switching from upvote to downvote
-      }
-      setIsDownvoted(true);
-      setTotalVote((prev) => prev - 1);
-    } else {
-      setIsDownvoted(false);
-      setTotalVote((prev) => prev + 1);
-    }
-
-    await useDownvote(post.uuid, isDownvoted, setTotalVote); // Correct number of arguments
-  };
+  const { isDownvoted, handleDownvote } = useDownvote(
+    post.uuid,
+    totalVote, // Pass the lifted totalVote state
+    post.has_downvoted,
+    setTotalVote // Pass setTotalVote to update the vote count
+  );
 
   return (
     <div
@@ -91,7 +72,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           className={`rounded-full px-2.5 py-1 ${
             isUpvoted ? "bg-green-500 text-white" : "bg-gray-200"
           }`}
-          onClick={useHandleUpvote}
+          onClick={handleUpvote}
         >
           <ChevronsUp size={20} />
         </Button>
@@ -101,7 +82,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           className={`rounded-full px-2.5 py-1 ${
             isDownvoted ? "bg-red-500 text-white" : "bg-gray-200"
           }`}
-          onClick={useHandleDownvote}
+          onClick={handleDownvote}
         >
           <ChevronsDown size={20} />
         </Button>
