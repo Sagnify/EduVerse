@@ -270,7 +270,14 @@ class SeriesSerializer(serializers.ModelSerializer):
         representation['lecture_count'] = instance.lectures.count()  # Use 'lectures' based on the related_name
         return representation
    
-    
+
+class UserProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProgress
+        fields = ['user', 'series', 'last_watched_lecture', 'updated_at']
+        read_only_fields = ['user', 'updated_at']
+
+
 
 class StreamSerializer(serializers.ModelSerializer):
     class Meta:

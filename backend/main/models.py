@@ -149,6 +149,20 @@ class Lecture(models.Model):
         return self.title
 
 
+class UserProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Ensure one row per user
+    series = models.ForeignKey(Series, on_delete=models.CASCADE)  # Series to which the progress is related
+    last_watched_lecture = models.ForeignKey(Lecture, null=True, blank=True, on_delete=models.SET_NULL)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"User: {self.user}, Series: {self.series}, Last Watched Lecture: {self.last_watched_lecture}"
+
+    class Meta:
+        unique_together = ('user', 'series')  # Ensures unique progress per user and series
+    
+    def __str__(self):
+        return f"User: {self.user}, Series: {self.series}, Last Watched Lecture: {self.last_watched_lecture}, Last Watched Timestamp: {self.last_watched_timestamp}"
 
 class SaveLater(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -24,6 +24,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
 
 class CustomObtainAuthToken(APIView):
@@ -50,32 +51,6 @@ class CustomObtainAuthToken(APIView):
         else:
             return Response({'detail': 'Invalid credentials'}, status=400)
     
-# class RefreshTokenView(APIView):
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-#     def post(self, request, *args, **kwargs):
-#         refresh_token = request.data.get('refresh')
-        
-#         if not refresh_token:
-#             return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-#         try:
-#             # Decode the refresh token
-#             token = RefreshToken(refresh_token)
-#             user_id = token['user_id']
-            
-#             # Fetch the user object from user_id
-#             user = User.objects.get(id=user_id)
-            
-#             # Generate a new access token
-#             new_access_token = AccessToken.for_user(user)
-            
-#             return Response({
-#                 'access': str(new_access_token),
-#             })
-        
-#         except (InvalidToken, User.DoesNotExist) as e:
-#             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 
 class UserApiView(ListCreateAPIView):
@@ -340,11 +315,11 @@ class PostViewSet(viewsets.ModelViewSet):
         if existing_upvote:
             # Remove existing upvote
             existing_upvote.delete()
-            return Response({'detail': 'Upvote removed.'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'detail': 'Upvote removed.', 'status': 0}, status=status.HTTP_200_OK)
         else:
             # Add new upvote
             Upvote.objects.create(user=user, post=post)
-            return Response({'detail': 'Post upvoted.'}, status=status.HTTP_201_CREATED)
+            return Response({'detail': 'Post upvoted.', 'status' : 1}, status=status.HTTP_201_CREATED)
 
 
     def downvote(self, request, *args, **kwargs):
@@ -372,11 +347,11 @@ class PostViewSet(viewsets.ModelViewSet):
         if existing_downvote:
             # Remove existing downvote
             existing_downvote.delete()
-            return Response({'detail': 'Downvote removed.'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'detail': 'Downvote removed.', 'status' : 0}, status=status.HTTP_200_OK)
         else:
             # Add new downvote
             Downvote.objects.create(user=user, post=post)
-            return Response({'detail': 'Post downvoted.'}, status=status.HTTP_201_CREATED)
+            return Response({'detail': 'Post downvoted.', 'status': 1}, status=status.HTTP_201_CREATED)
         
 
 
@@ -385,7 +360,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     authentication_classes = [QueryParamTokenAuthentication]
     permission_classes = [IsOwnerOrReadOnly]
     serializer_class = CommentSerializer
-    
+
     def get_queryset(self):
         post_uuid = self.kwargs.get('post_uuid')
         if post_uuid:
@@ -537,6 +512,70 @@ class LectureViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+   
+class UserProgressViewSet(viewsets.ModelViewSet):
+    authentication_classes = [QueryParamTokenAuthentication]
+    permission_classes = [IsOwnerOrReadOnly]
+    serializer_class = UserProgressSerializer
+
+    def get_queryset(self):
+        """
+        Optionally restricts the returned progress to the user
+        if ?me=true is provided in the query parameters.
+        """
+        queryset = UserProgress.objects.all()
+        me = self.request.query_params.get('me', None)
+
+        if me == 'true' and self.request.user.is_authenticated:
+            # Return progress only for the authenticated user
+            queryset = queryset.filter(user=self.request.user)
+
+        return queryset
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        series = serializer.validated_data.get('series')
+        last_watched_lecture = serializer.validated_data.get('last_watched_lecture')
+
+        # Try to get the existing record
+        progress, created = UserProgress.objects.get_or_create(
+            user=user,
+            defaults={'series': series, 'last_watched_lecture': last_watched_lecture}
+        )
+
+        if not created:
+            # If record exists, update the series and progress
+            progress.series = series
+            progress.last_watched_lecture = last_watched_lecture
+            progress.save()
+
+        # Return the updated or created progress
+        serializer.instance = progress
+
+    def update(self, request, *args, **kwargs):
+        """
+        Update an existing progress record. Only allowed if ?me=true is provided
+        in the query parameters.
+        """
+        me = request.query_params.get('me', None)
+
+        if me != 'true':
+            return Response({'detail': 'Updates are only allowed with ?me=true.'}, status=status.HTTP_403_FORBIDDEN)
+
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Partially update an existing progress record. Only allowed if ?me=true is provided
+        in the query parameters.
+        """
+        me = request.query_params.get('me', None)
+
+        if me != 'true':
+            return Response({'detail': 'Partial updates are only allowed with ?me=true.'}, status=status.HTTP_403_FORBIDDEN)
+
+        return super().partial_update(request, *args, **kwargs)
+    
 
 
 class StreamViewSet(viewsets.ModelViewSet):
