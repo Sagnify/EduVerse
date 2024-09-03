@@ -12,7 +12,7 @@ from .permission import IsOwnerOrReadOnly
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotAuthenticated, AuthenticationFailed
+from rest_framework.exceptions import NotAuthenticated, ValidationError
 from django.core.exceptions import PermissionDenied
 from rest_framework import status
 from rest_framework.exceptions import NotFound
@@ -384,16 +384,20 @@ class PostViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     authentication_classes = [QueryParamTokenAuthentication]
     permission_classes = [IsOwnerOrReadOnly]
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-
+    
     def get_queryset(self):
-        # For list view, only fetch top-level comments (those without a parent)
-        if self.action == 'list':
-            return Comment.objects.filter(parent__isnull=True)
+        post_uuid = self.kwargs.get('post_uuid')
+        if post_uuid:
+            try:
+                post = Post.objects.get(uuid=post_uuid)
+                # Fetch top-level comments only
+                return Comment.objects.filter(post=post, parent__isnull=True)
+            except Post.DoesNotExist:
+                return Comment.objects.none()
+        
         # For other actions (retrieve, update, delete), allow access to all comments
         return Comment.objects.all()
-
     def create(self, request, *args, **kwargs):
         post_uuid = request.data.get('post')
         parent_id = request.data.get('parent')
@@ -431,7 +435,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
@@ -453,6 +457,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class SeriesViewSet(viewsets.ModelViewSet):

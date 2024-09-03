@@ -23,7 +23,10 @@ urlpatterns = [
     path('posts/<uuid:pk>/downvote/', views.PostViewSet.as_view({'post': 'downvote'}), name='post-downvote'),
 
     path('comments/', views.CommentViewSet.as_view({'get': 'list', 'post': 'create'}), name='comment-list-create'),
+    # Retrieve, update, and delete individual comments by ID (pk)
     path('comments/<int:pk>/', views.CommentViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='comment-detail'),
+    # List comments by post UUID
+    path('comments/post/<uuid:post_uuid>/', views.CommentViewSet.as_view({'get': 'list'}), name='comment-list-by-post'),
 
     path('series/', views.SeriesViewSet.as_view({'get': 'list', 'post': 'create'}), name='series-list-create'),
     path('series/<int:pk>/', views.SeriesViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='series-detail'),
