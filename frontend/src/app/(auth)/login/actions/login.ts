@@ -25,10 +25,11 @@ export async function loginUser(formData: {
     const resData = await res.json();
     console.log(resData);
 
-    // Store token and redirect
-    localStorage.setItem("token", resData.access);
-    localStorage.setItem("refresh", resData.refresh);
-    // localStorage.setItem("userId", resData.user_id);
+    // Store token and other information in localStorage
+    localStorage.setItem("token", resData.token);
+    // You can also save additional user data if needed
+    // localStorage.setItem("is_student", resData.is_student.toString());
+    // localStorage.setItem("is_teacher", resData.is_teacher.toString());
 
     return { success: true, message: "Login successful!" };
   } catch (error: any) {

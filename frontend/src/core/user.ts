@@ -1,5 +1,5 @@
-export function fetchUserDataFromId(userId: string): Promise<User> {
-  const url = `https://eduverse-a4l5.onrender.com/api/users/?user_id=${userId}`;
+export function fetchUserDataFromToken(token: string): Promise<User> {
+  const url = `https://eduverse-a4l5.onrender.com/api/users/?token=${token}&show_my=true`;
 
   return fetch(url)
     .then((response) => {

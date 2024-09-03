@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
-import useUserFetcher from "@/core/userFetcher";
+import useUserFetcher from "@/core/fetchUser";
 import Loading from "./Loader";
 import { useRouter } from "next/navigation";
 

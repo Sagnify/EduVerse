@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import useUserFetcher from "@/core/userFetcher";
+import useUserFetcher from "@/core/fetchUser";
 import Loading from "@/components/Loader";
 import Post from "@/components/posts/post";
 
