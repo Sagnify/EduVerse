@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'rest_framework_simplejwt',
+
 ]
 
 MIDDLEWARE = [
@@ -180,4 +181,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',  # This enables the form in the browsable API
+    ),
 }

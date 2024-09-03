@@ -272,12 +272,11 @@ class SeriesSerializer(serializers.ModelSerializer):
    
 
 class UserProgressSerializer(serializers.ModelSerializer):
-    series = SeriesSerializer()
-    last_watched_lecture = LectureSerializer()
-
     class Meta:
         model = UserProgress
         fields = ['user', 'series', 'last_watched_lecture', 'updated_at']
+        read_only_fields = ['user', 'updated_at']
+
 
 
 class StreamSerializer(serializers.ModelSerializer):

@@ -24,6 +24,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
 
 class CustomObtainAuthToken(APIView):
@@ -50,32 +51,6 @@ class CustomObtainAuthToken(APIView):
         else:
             return Response({'detail': 'Invalid credentials'}, status=400)
     
-# class RefreshTokenView(APIView):
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-#     def post(self, request, *args, **kwargs):
-#         refresh_token = request.data.get('refresh')
-        
-#         if not refresh_token:
-#             return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-#         try:
-#             # Decode the refresh token
-#             token = RefreshToken(refresh_token)
-#             user_id = token['user_id']
-            
-#             # Fetch the user object from user_id
-#             user = User.objects.get(id=user_id)
-            
-#             # Generate a new access token
-#             new_access_token = AccessToken.for_user(user)
-            
-#             return Response({
-#                 'access': str(new_access_token),
-#             })
-        
-#         except (InvalidToken, User.DoesNotExist) as e:
-#             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 
 class UserApiView(ListCreateAPIView):
@@ -537,69 +512,71 @@ class LectureViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class UserProgressViewSet(viewsets.ViewSet):
+   
+class UserProgressViewSet(viewsets.ModelViewSet):
     authentication_classes = [QueryParamTokenAuthentication]
     permission_classes = [IsOwnerOrReadOnly]
+    serializer_class = UserProgressSerializer
 
-    def list(self, request):
-        me = request.query_params.get('me')
-        token = request.query_params.get('token')
+    def get_queryset(self):
+        """
+        Optionally restricts the returned progress to the user
+        if ?me=true is provided in the query parameters.
+        """
+        queryset = UserProgress.objects.all()
+        me = self.request.query_params.get('me', None)
 
-        # Check if the token is valid
-        if token and not self.is_valid_token(token):
-            return Response({'detail': 'Invalid token.'}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        if me == 'true':
+        if me == 'true' and self.request.user.is_authenticated:
             # Return progress only for the authenticated user
-            user_progress = UserProgress.objects.filter(user=request.user)
-        else:
-            # Return progress for all users (or implement any necessary filtering here)
-            user_progress = UserProgress.objects.all()
-        
-        serializer = UserProgressSerializer(user_progress, many=True)
-        return Response(serializer.data)
+            queryset = queryset.filter(user=self.request.user)
 
-    def create(self, request):
-        user = request.user
-        serializer = UserProgressSerializer(data=request.data)
-        if serializer.is_valid():
-            series = serializer.validated_data.get('series')
-            last_watched_lecture = serializer.validated_data.get('last_watched_lecture')
-            
-            progress, created = UserProgress.objects.get_or_create(
-                user=user,
-                defaults={'series': series, 'last_watched_lecture': last_watched_lecture}
-            )
-            if not created:
-                # If record exists, update the series and progress
-                progress.series = series
-                progress.last_watched_lecture = last_watched_lecture
-                progress.save()
-            
-            return Response(UserProgressSerializer(progress).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return queryset
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        series = serializer.validated_data.get('series')
+        last_watched_lecture = serializer.validated_data.get('last_watched_lecture')
+
+        # Try to get the existing record
+        progress, created = UserProgress.objects.get_or_create(
+            user=user,
+            defaults={'series': series, 'last_watched_lecture': last_watched_lecture}
+        )
+
+        if not created:
+            # If record exists, update the series and progress
+            progress.series = series
+            progress.last_watched_lecture = last_watched_lecture
+            progress.save()
+
+        # Return the updated or created progress
+        serializer.instance = progress
 
     def update(self, request, *args, **kwargs):
-        user = request.user
-        
-        try:
-            user_progress = UserProgress.objects.get(user=user)
-        except UserProgress.DoesNotExist:
-            return Response({'detail': 'Progress record not found.'}, status=status.HTTP_404_NOT_FOUND)
+        """
+        Update an existing progress record. Only allowed if ?me=true is provided
+        in the query parameters.
+        """
+        me = request.query_params.get('me', None)
 
-        serializer = UserProgressSerializer(user_progress, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if me != 'true':
+            return Response({'detail': 'Updates are only allowed with ?me=true.'}, status=status.HTTP_403_FORBIDDEN)
+
+        return super().update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+        """
+        Partially update an existing progress record. Only allowed if ?me=true is provided
+        in the query parameters.
+        """
+        me = request.query_params.get('me', None)
+
+        if me != 'true':
+            return Response({'detail': 'Partial updates are only allowed with ?me=true.'}, status=status.HTTP_403_FORBIDDEN)
+
+        return super().partial_update(request, *args, **kwargs)
     
-    def is_valid_token(self, token):
-        # Implement token validation logic here
-        return True
-    
+
 
 class StreamViewSet(viewsets.ModelViewSet):
     queryset = Stream.objects.all()
