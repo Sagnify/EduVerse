@@ -140,7 +140,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 ## Post Serializers
 class PostListSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
+    # user = serializers.ReadOnlyField(source='user.username')
+    user = UserSerializer()
     upvote_count = serializers.SerializerMethodField()
     downvote_count = serializers.SerializerMethodField()
     total_vote = serializers.SerializerMethodField()
