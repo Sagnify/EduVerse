@@ -1,7 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Check, LogOutIcon, Monitor, Moon, Sun, UserIcon } from "lucide-react";
+import {
+  Check,
+  LogOutIcon,
+  Monitor,
+  Moon,
+  Sun,
+  User,
+  UserIcon,
+} from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -40,8 +48,11 @@ export default function UserButton({ className }: UserButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className={cn("flex-none rounded-full", className)}>
-          {loading ? <Loading /> : user ? user.username : "User"}
+        <div className={cn("flex items-center gap-2 rounded-full", className)}>
+          <User />
+          <div className="hidden md:block">
+            {loading ? <Loading /> : user ? user.username : "User"}
+          </div>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

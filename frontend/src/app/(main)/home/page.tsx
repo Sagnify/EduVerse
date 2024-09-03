@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import useUserFetcher from "@/core/fetchUser";
 import Loading from "@/components/Loader";
 import PostList from "@/components/posts/PostList";
+import NewPost from "@/components/posts/CurrentLearning";
+import LeftBar from "@/components/LeftBar";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const Page = () => {
   const { user, loading, error } = useUserFetcher();
@@ -30,11 +34,25 @@ const Page = () => {
 
   return (
     <div className="">
-      <div>
+      <div className="flex flex-col items-center gap-2 w-full text-center justify-center mb-7">
         <h1 className="text-3xl font-bold">Welcome, {user!.first_name}!</h1>
-        <span>Ready to learn?</span>
+        <Button className="gap-2 text-xs">
+          <Plus size={20} />
+          Ask a Question
+        </Button>
       </div>
-      <PostList />
+      <div className="flex w-full gap-4">
+        <div className="w-full">
+          <span className="text-center">Ready to learn something new?</span>
+          <PostList />
+        </div>
+        <div className="w-fit">
+          <span className="text-center">
+            Or continue learning from where you left,
+          </span>
+          <NewPost />
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,9 +1,7 @@
 "use client";
-import Link from "next/link";
-import { SearchIcon } from "lucide-react";
+import {Plus, SearchIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
-import UserButton from "./UserButton";
 import SearchField from "./searchField";
 import Icon from "./Icon";
 import { useRouter } from "next/navigation"; // Import useRouter
@@ -32,26 +30,11 @@ export default function Navbar() {
           <div className="hidden xl:block">
             <SearchField />
           </div>
-          <div className="flex gap-1 items-center">
-            <Link href={`/home`}>
-              <Button variant="ghost" className="px-2">
-                Home
-              </Button>
-            </Link>
-            <Link href={`/library`}>
-              <Button variant="ghost" className="px-2">
-                Library
-              </Button>
-            </Link>
-            <Link href={`/lectures`}>
-              <Button variant="ghost" className="px-2">
-                Lectures
-              </Button>
-            </Link>
-            <Button variant="ghost" className="px-2">
-              <UserButton />
-            </Button>
-          </div>
+          {/* <Button className="gap-2 text-lg">
+            <Plus />
+            <div>
+            Ask a Question</div>
+          </Button> */}
         </div>
       </div>
 

@@ -1,0 +1,68 @@
+// Leftbar.js
+import Link from "next/link";
+import { Bell, House, LibraryBig, SquarePlay, User } from "lucide-react";
+import { Button } from "./ui/button";
+import UserButton from "./UserButton";
+
+export default function Leftbar() {
+  return (
+    <>
+      {/* Desktop/Tablet Navigation (Left sidebar) */}
+      <div className="hidden md:flex flex-col gap-4 w-72 ">
+        <Link href={`/home`}>
+          <Button variant="ghost" className="w-full px-2 gap-2 justify-normal">
+            <House />
+            Home
+          </Button>
+        </Link>
+        <Link href={`/library`}>
+          <Button variant="ghost" className="w-full px-2 gap-2 justify-normal">
+            <LibraryBig />
+            Library
+          </Button>
+        </Link>
+        <Link href={`/lectures`}>
+          <Button variant="ghost" className="w-full px-2 gap-2 justify-normal">
+            <SquarePlay />
+            Lectures
+          </Button>
+        </Link>
+        <Link href={`/notifications`}>
+          <Button variant="ghost" className="w-full px-2 gap-2 justify-normal">
+            <Bell /> Notifications
+          </Button>
+        </Link>
+        <Button variant="ghost" className="w-full px-2 gap-2 justify-normal">
+          <UserButton />
+        </Button>
+      </div>
+
+      {/* Mobile Navigation (Bottom bar) */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white shadow-md flex justify-around p-2">
+        <Link href={`/home`}>
+          <Button variant="ghost" className="flex flex-col items-center">
+            <House />
+          </Button>
+        </Link>
+        <Link href={`/library`}>
+          <Button variant="ghost" className="flex flex-col items-center">
+            <LibraryBig />
+          </Button>
+        </Link>
+        <Link href={`/lectures`}>
+          <Button variant="ghost" className="flex flex-col items-center">
+            <SquarePlay />
+          </Button>
+        </Link>
+        <Link href={`/notifications`}>
+          <Button variant="ghost" className="flex flex-col items-center">
+            <Bell />
+          </Button>
+        </Link>
+        <Button variant="ghost" className="flex flex-col items-center">
+          <UserButton />
+        </Button>
+      </div>
+    </>
+  );
+}
