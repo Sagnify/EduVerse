@@ -23,6 +23,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
 
 
 class CustomObtainAuthToken(APIView):
@@ -222,7 +223,7 @@ class UserProfileStudentViewSet(viewsets.ModelViewSet):
 
 # Post ViewSet
 class PostViewSet(viewsets.ModelViewSet):
-    authentication_classes = [QueryParamTokenAuthentication]  # Keep your custom authentication
+    authentication_classes = [QueryParamTokenAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = Post.objects.all()
 
@@ -233,7 +234,11 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         uuid = kwargs.get('pk')
-        post = get_object_or_404(Post, uuid=uuid)
+        try:
+            post = Post.objects.get(uuid=uuid)
+        except Post.DoesNotExist:
+            raise NotFound('Post not found.')
+
         serializer = self.get_serializer(post)
         return Response(serializer.data)
 
@@ -243,7 +248,10 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Edit parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
         
         uuid = kwargs.get('pk')
-        post = get_object_or_404(Post, uuid=uuid)
+        try:
+            post = Post.objects.get(uuid=uuid)
+        except Post.DoesNotExist:
+            raise NotFound('Post not found.')
 
         serializer = self.get_serializer(post, data=request.data, partial=True)
         if serializer.is_valid():
@@ -252,11 +260,29 @@ class PostViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+        edit_param = request.query_params.get('edit')
+        if edit_param != 'true':
+            return Response({'detail': 'Edit parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        uuid = kwargs.get('pk')
+        try:
+            post = Post.objects.get(uuid=uuid)
+        except Post.DoesNotExist:
+            raise NotFound('Post not found.')
+
+        serializer = self.get_serializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
         uuid = kwargs.get('pk')
-        post = get_object_or_404(Post, uuid=uuid)
+        try:
+            post = Post.objects.get(uuid=uuid)
+        except Post.DoesNotExist:
+            raise NotFound('Post not found.')
+
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -265,21 +291,29 @@ class PostViewSet(viewsets.ModelViewSet):
         if not token_key:
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Use DRF's TokenAuthentication to validate the token
-        user = self.authenticate_token(token_key)
-        if not user:
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+            logger.debug(f"User found: {user.id}")
+        except Token.DoesNotExist:
+            logger.error(f"Invalid token: {token_key}")
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        request.data._mutable = True  # Make request.data mutable
-        request.data['user'] = user.id
-        request.data._mutable = False  # Make request.data immutable
+        # Create a mutable copy of the request data
+        mutable_data = request.data.copy()
+        mutable_data['user'] = user.id
+        
+        logger.debug(f"Request data: {mutable_data}")
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=mutable_data)
         if serializer.is_valid():
-            self.perform_create(serializer)
+            logger.debug(f"Serializer is valid. Data: {serializer.validated_data}")
+            serializer.save(user=user)  # Explicitly pass the user when saving
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            logger.error(f"Serializer errors: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def upvote(self, request, *args, **kwargs):
         post_uuid = kwargs.get('pk')
@@ -287,11 +321,16 @@ class PostViewSet(viewsets.ModelViewSet):
         if not token_key:
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = self.authenticate_token(token_key)
-        if not user:
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        post = get_object_or_404(Post, uuid=post_uuid)
+        try:
+            post = Post.objects.get(uuid=post_uuid)
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         # Remove any existing downvote
         Downvote.objects.filter(user=user, post=post).delete()
@@ -307,17 +346,23 @@ class PostViewSet(viewsets.ModelViewSet):
             Upvote.objects.create(user=user, post=post)
             return Response({'detail': 'Post upvoted.'}, status=status.HTTP_201_CREATED)
 
+
     def downvote(self, request, *args, **kwargs):
         post_uuid = kwargs.get('pk')
         token_key = request.query_params.get('token')
         if not token_key:
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = self.authenticate_token(token_key)
-        if not user:
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        post = get_object_or_404(Post, uuid=post_uuid)
+        try:
+            post = Post.objects.get(uuid=post_uuid)
+        except Post.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         # Remove any existing upvote
         Upvote.objects.filter(user=user, post=post).delete()
@@ -332,17 +377,7 @@ class PostViewSet(viewsets.ModelViewSet):
             # Add new downvote
             Downvote.objects.create(user=user, post=post)
             return Response({'detail': 'Post downvoted.'}, status=status.HTTP_201_CREATED)
-
-    # def authenticate_token(self, token_key):
-    #     """
-    #     Authenticate the token and return the associated user.
-    #     """
-    #     try:
-    #         token = TokenAuthentication().authenticate_credentials(token_key.encode())
-    #         return token[0]  # Return the user
-    #     except Exception:
-    #         return None
-    
+        
 
 
 ## Comment ViewSet

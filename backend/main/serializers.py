@@ -140,19 +140,37 @@ class UserSerializer(serializers.ModelSerializer):
 
 ## Post Serializers
 class PostListSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')  # Show username or other user info
+    # user = serializers.ReadOnlyField(source='user.username')
+    user = UserSerializer()
     upvote_count = serializers.SerializerMethodField()
     downvote_count = serializers.SerializerMethodField()
+    total_vote = serializers.SerializerMethodField()
+    has_upvoted = serializers.SerializerMethodField()
+    has_downvoted = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id','created_at', 'user', 'caption', 'post_img_url', 'uuid', 'upvote_count', 'downvote_count']
+        fields = ['id', 'created_at', 'user', 'caption', 'post_img_url', 'uuid', 'upvote_count', 'downvote_count', 'total_vote', 'has_upvoted', 'has_downvoted']
 
     def get_upvote_count(self, obj):
         return Upvote.objects.filter(post=obj).count()
 
     def get_downvote_count(self, obj):
         return Downvote.objects.filter(post=obj).count()
+    
+    def get_total_vote(self, obj):
+        upvote_count = self.get_upvote_count(obj)
+        downvote_count = self.get_downvote_count(obj)
+        return upvote_count - downvote_count
+
+    def get_has_upvoted(self, obj):
+        user = self.context.get('request').user
+        return Upvote.objects.filter(post=obj, user=user).exists()
+
+    def get_has_downvoted(self, obj):
+        user = self.context.get('request').user
+        return Downvote.objects.filter(post=obj, user=user).exists()
+
 
 
 class PostCreateSerializer(serializers.ModelSerializer):
