@@ -21,3 +21,14 @@ interface User {
   profile: UserProfile;
   student_profile: StudentProfile;
 }
+
+interface PostProps {
+  post: {
+    uuid: string;
+    caption: string;
+    user: User;
+    created_at: string;
+    total_vote: number;
+    post_img_url?: string;
+  };
+}

@@ -1,5 +1,5 @@
 // services/api.ts
-export const fetchPostById = async (postId: string): Promise<any> => {
+export const fetchAllPosts = async (): Promise<any[]> => {
   const token = localStorage.getItem("token");
 
   if (!token) {
@@ -8,17 +8,17 @@ export const fetchPostById = async (postId: string): Promise<any> => {
 
   try {
     const response = await fetch(
-      `https://eduverse-a4l5.onrender.com/api/posts/${postId}`
+      `https://eduverse-a4l5.onrender.com/api/posts/?token=${token}`
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch post: ${response.statusText}`);
+      throw new Error(`Failed to fetch posts: ${response.statusText}`);
     }
 
-    const post = await response.json();
-    return post;
+    const posts = await response.json();
+    return posts;
   } catch (error) {
-    console.error("Error fetching post:", error);
+    console.error("Error fetching posts:", error);
     throw error; // Re-throw to be handled in component
   }
 };
