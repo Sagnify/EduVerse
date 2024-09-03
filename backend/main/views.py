@@ -340,7 +340,7 @@ class PostViewSet(viewsets.ModelViewSet):
         if existing_upvote:
             # Remove existing upvote
             existing_upvote.delete()
-            return Response({'detail': 'Upvote removed.', 'status': 0}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'detail': 'Upvote removed.', 'status': 0}, status=status.HTTP_200_OK)
         else:
             # Add new upvote
             Upvote.objects.create(user=user, post=post)
@@ -372,7 +372,7 @@ class PostViewSet(viewsets.ModelViewSet):
         if existing_downvote:
             # Remove existing downvote
             existing_downvote.delete()
-            return Response({'detail': 'Downvote removed.', 'status' : 0}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'detail': 'Downvote removed.', 'status' : 0}, status=status.HTTP_200_OK)
         else:
             # Add new downvote
             Downvote.objects.create(user=user, post=post)
