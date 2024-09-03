@@ -12,7 +12,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
   const [isUpvoted, setIsUpvoted] = useState(post.has_upvoted);
   const [isDownvoted, setIsDownvoted] = useState(post.has_downvoted);
 
-  const handleUpvote = async () => {
+  const useHandleUpvote = async () => {
     if (!isUpvoted) {
       if (isDownvoted) {
         setIsDownvoted(false);
@@ -28,7 +28,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
     await useUpvote(post.uuid, isUpvoted, setTotalVote); // Correct number of arguments
   };
 
-  const handleDownvote = async () => {
+  const useHandleDownvote = async () => {
     if (!isDownvoted) {
       if (isUpvoted) {
         setIsUpvoted(false);
@@ -91,7 +91,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           className={`rounded-full px-2.5 py-1 ${
             isUpvoted ? "bg-green-500 text-white" : "bg-gray-200"
           }`}
-          onClick={handleUpvote}
+          onClick={useHandleUpvote}
         >
           <ChevronsUp size={20} />
         </Button>
@@ -101,7 +101,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           className={`rounded-full px-2.5 py-1 ${
             isDownvoted ? "bg-red-500 text-white" : "bg-gray-200"
           }`}
-          onClick={handleDownvote}
+          onClick={useHandleDownvote}
         >
           <ChevronsDown size={20} />
         </Button>
