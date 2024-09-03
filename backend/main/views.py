@@ -19,13 +19,15 @@ from rest_framework.exceptions import NotFound
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .jwt import create_jwt_for_user, decode_refresh_token
+# from .jwt import create_jwt_for_user, decode_refresh_token
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework.views import APIView
 
 
-class CustomObtainAuthToken(TokenObtainPairView):
+class CustomObtainAuthToken(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
         # sourcery skip: remove-unnecessary-else, swap-if-else-branches
         username = request.data.get('username')
@@ -34,13 +36,12 @@ class CustomObtainAuthToken(TokenObtainPairView):
         user = authenticate(username=username, password=password)
 
         if user is not None:
-            # Generate JWT tokens for the authenticated user
-            tokens = create_jwt_for_user(user)
+            # Generate or retrieve the token for the authenticated user
+            token, _ = Token.objects.get_or_create(user=user)
             
             # Prepare response data
             response_data = {
-                'refresh': tokens['refresh'],
-                'access': tokens['access'],
+                'token': token.key,
                 'is_student': getattr(user.profile, 'is_student', False),
                 'is_teacher': getattr(user.profile, 'is_teacher', False),
             }
@@ -48,41 +49,54 @@ class CustomObtainAuthToken(TokenObtainPairView):
         else:
             return Response({'detail': 'Invalid credentials'}, status=400)
     
-class RefreshTokenView(APIView):
-    authentication_classes = []
-    permission_classes = [AllowAny]
-    def post(self, request, *args, **kwargs):
-        refresh_token = request.data.get('refresh')
+# class RefreshTokenView(APIView):
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+#     def post(self, request, *args, **kwargs):
+#         refresh_token = request.data.get('refresh')
         
-        if not refresh_token:
-            return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+#         if not refresh_token:
+#             return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
         
-        try:
-            # Decode the refresh token
-            token = RefreshToken(refresh_token)
-            user_id = token['user_id']
+#         try:
+#             # Decode the refresh token
+#             token = RefreshToken(refresh_token)
+#             user_id = token['user_id']
             
-            # Fetch the user object from user_id
-            user = User.objects.get(id=user_id)
+#             # Fetch the user object from user_id
+#             user = User.objects.get(id=user_id)
             
-            # Generate a new access token
-            new_access_token = AccessToken.for_user(user)
+#             # Generate a new access token
+#             new_access_token = AccessToken.for_user(user)
             
-            return Response({
-                'access': str(new_access_token),
-            })
+#             return Response({
+#                 'access': str(new_access_token),
+#             })
         
-        except (InvalidToken, User.DoesNotExist) as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+#         except (InvalidToken, User.DoesNotExist) as e:
+#             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 
 class UserApiView(ListCreateAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    authentication_classes = []
-    permission_classes = [AllowAny]
+    authentication_classes = [QueryParamTokenAuthentication]  # Use DRF's TokenAuthentication
+    permission_classes = [AllowAny]  # AllowAny can be replaced with IsAuthenticated if needed
 
     def list(self, request, *args, **kwargs):
+        show_my = request.query_params.get('show_my') == 'true'
+        if show_my:
+            if not request.user.is_authenticated:
+                raise NotAuthenticated(detail='Authentication is required to access your details.')
+
+            user = request.user
+            try:
+                user_data = self.get_serializer(user).data
+                return Response(user_data)
+            except Exception as e:
+                logger.error(f"Error serializing user {user.id}: {str(e)}")
+                return Response({"error": "Error retrieving user data"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         user_id = request.query_params.get('user_id')
         username = request.query_params.get('username')
 
@@ -114,9 +128,22 @@ class UserApiView(ListCreateAPIView):
         try:
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+            # Automatically create a token for the new user
+            user = serializer.instance
+            token, created = Token.objects.get_or_create(user=user)
+
+            # Include the token in the response data
+            response_data = serializer.data
+            response_data['token'] = token.key
+
+            return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
         except serializers.ValidationError as e:
+            logger.error(f"Validation error: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Error creating user: {str(e)}")
+            return Response({"error": "Error creating user"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -195,7 +222,7 @@ class UserProfileStudentViewSet(viewsets.ModelViewSet):
 
 # Post ViewSet
 class PostViewSet(viewsets.ModelViewSet):
-    authentication_classes = [QueryParamTokenAuthentication]
+    authentication_classes = [QueryParamTokenAuthentication]  # Keep your custom authentication
     permission_classes = [IsAuthenticated]
     queryset = Post.objects.all()
 
@@ -206,11 +233,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         uuid = kwargs.get('pk')
-        try:
-            post = Post.objects.get(uuid=uuid)
-        except Post.DoesNotExist:
-            raise NotFound('Post not found.')
-
+        post = get_object_or_404(Post, uuid=uuid)
         serializer = self.get_serializer(post)
         return Response(serializer.data)
 
@@ -220,10 +243,7 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Edit parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
         
         uuid = kwargs.get('pk')
-        try:
-            post = Post.objects.get(uuid=uuid)
-        except Post.DoesNotExist:
-            raise NotFound('Post not found.')
+        post = get_object_or_404(Post, uuid=uuid)
 
         serializer = self.get_serializer(post, data=request.data, partial=True)
         if serializer.is_valid():
@@ -232,29 +252,11 @@ class PostViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, *args, **kwargs):
-        edit_param = request.query_params.get('edit')
-        if edit_param != 'true':
-            return Response({'detail': 'Edit parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        uuid = kwargs.get('pk')
-        try:
-            post = Post.objects.get(uuid=uuid)
-        except Post.DoesNotExist:
-            raise NotFound('Post not found.')
-
-        serializer = self.get_serializer(post, data=request.data, partial=True)
-        if serializer.is_valid():
-            self.perform_update(serializer)
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return self.update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         uuid = kwargs.get('pk')
-        try:
-            post = Post.objects.get(uuid=uuid)
-        except Post.DoesNotExist:
-            raise NotFound('Post not found.')
-
+        post = get_object_or_404(Post, uuid=uuid)
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -263,14 +265,14 @@ class PostViewSet(viewsets.ModelViewSet):
         if not token_key:
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            token = AccessToken(token_key)  # Verify and decode the JWT token
-            user_id = token['user_id']  # Extract user ID from the token
-            request.data._mutable = True  # Make request.data mutable
-            request.data['user'] = user_id
-            request.data._mutable = False  # Make request.data immutable
-        except InvalidToken:
+        # Use DRF's TokenAuthentication to validate the token
+        user = self.authenticate_token(token_key)
+        if not user:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.data._mutable = True  # Make request.data mutable
+        request.data['user'] = user.id
+        request.data._mutable = False  # Make request.data immutable
 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -285,31 +287,25 @@ class PostViewSet(viewsets.ModelViewSet):
         if not token_key:
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            token = AccessToken(token_key)
-            user_id = token['user_id']
-        except InvalidToken:
+        user = self.authenticate_token(token_key)
+        if not user:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            post = Post.objects.get(uuid=post_uuid)
-        except Post.DoesNotExist:
-            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+        post = get_object_or_404(Post, uuid=post_uuid)
 
         # Remove any existing downvote
-        Downvote.objects.filter(user_id=user_id, post=post).delete()
+        Downvote.objects.filter(user=user, post=post).delete()
 
         # Toggle the upvote
-        existing_upvote = Upvote.objects.filter(user_id=user_id, post=post).first()
+        existing_upvote = Upvote.objects.filter(user=user, post=post).first()
         if existing_upvote:
             # Remove existing upvote
             existing_upvote.delete()
             return Response({'detail': 'Upvote removed.'}, status=status.HTTP_204_NO_CONTENT)
         else:
             # Add new upvote
-            Upvote.objects.create(user_id=user_id, post=post)
+            Upvote.objects.create(user=user, post=post)
             return Response({'detail': 'Post upvoted.'}, status=status.HTTP_201_CREATED)
-
 
     def downvote(self, request, *args, **kwargs):
         post_uuid = kwargs.get('pk')
@@ -317,30 +313,35 @@ class PostViewSet(viewsets.ModelViewSet):
         if not token_key:
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            token = AccessToken(token_key)
-            user_id = token['user_id']
-        except InvalidToken:
+        user = self.authenticate_token(token_key)
+        if not user:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            post = Post.objects.get(uuid=post_uuid)
-        except Post.DoesNotExist:
-            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+        post = get_object_or_404(Post, uuid=post_uuid)
 
         # Remove any existing upvote
-        Upvote.objects.filter(user_id=user_id, post=post).delete()
+        Upvote.objects.filter(user=user, post=post).delete()
 
         # Toggle the downvote
-        existing_downvote = Downvote.objects.filter(user_id=user_id, post=post).first()
+        existing_downvote = Downvote.objects.filter(user=user, post=post).first()
         if existing_downvote:
             # Remove existing downvote
             existing_downvote.delete()
             return Response({'detail': 'Downvote removed.'}, status=status.HTTP_204_NO_CONTENT)
         else:
             # Add new downvote
-            Downvote.objects.create(user_id=user_id, post=post)
+            Downvote.objects.create(user=user, post=post)
             return Response({'detail': 'Post downvoted.'}, status=status.HTTP_201_CREATED)
+
+    # def authenticate_token(self, token_key):
+    #     """
+    #     Authenticate the token and return the associated user.
+    #     """
+    #     try:
+    #         token = TokenAuthentication().authenticate_credentials(token_key.encode())
+    #         return token[0]  # Return the user
+    #     except Exception:
+    #         return None
     
 
 
@@ -362,16 +363,10 @@ class CommentViewSet(viewsets.ModelViewSet):
         post_uuid = request.data.get('post')
         parent_id = request.data.get('parent')
 
-        # Get the user from the token
-        token_key = request.query_params.get('token')
-        if not token_key:
-            return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            token = AccessToken(token_key)  # Verify and decode the JWT token
-            user_id = token['user_id']  # Extract user ID from the token
-        except InvalidToken:
-            return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Get the user from the authenticated request
+        user = request.user
+        if not user.is_authenticated:
+            return Response({'detail': 'Authentication is required.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Fetch the post and optionally the parent comment
         try:
@@ -389,7 +384,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         # Prepare data for the serializer
         data = request.data.copy()
         data['post'] = post.id
-        data['user_id'] = user_id
+        data['user'] = user.id
         
         if parent_comment:
             data['parent'] = parent_comment.id
@@ -431,22 +426,13 @@ class SeriesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
     queryset = Series.objects.all()
 
-    def get_token_user(self):
-        token_key = self.request.query_params.get('token')
-        if not token_key:
-            raise NotAuthenticated(detail='Token query parameter is required.')
-
-        try:
-            token = AccessToken(token_key)  # Verify and decode the JWT token
-            return token['user_id']  # Extract user ID from the token
-        except InvalidToken:
-            raise NotAuthenticated(detail='Invalid token.')
-
     def create(self, request, *args, **kwargs):
-        user_id = self.get_token_user()
+        user = request.user
+        if not user.is_authenticated:
+            raise NotAuthenticated(detail='Authentication is required.')
 
         data = request.data.copy()
-        data['user'] = user_id  # Add user ID to the data
+        data['user'] = user.id  # Add user ID to the data
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -455,8 +441,7 @@ class SeriesViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
-        user_id = self.get_token_user()
-        serializer.save(user_id=user_id)
+        serializer.save(user=self.request.user)
 
 
 class LectureViewSet(viewsets.ModelViewSet):
@@ -465,24 +450,13 @@ class LectureViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
     queryset = Lecture.objects.all()
 
-    def get_token_user(self):
-        token_key = self.request.query_params.get('token')
-        if not token_key:
-            raise NotAuthenticated(detail='Token query parameter is required.')
-
-        try:
-            # Verify and decode the JWT token
-            token = AccessToken(token_key)
-            user_id = token['user_id']  # Extract user ID from the token
-            return user_id
-        except InvalidToken:
-            raise NotAuthenticated(detail='Invalid token.')
-
     def create(self, request, *args, **kwargs):
-        user_id = self.get_token_user()
+        user = request.user
+        if not user.is_authenticated:
+            raise NotAuthenticated(detail='Authentication is required.')
 
         data = request.data.copy()
-        data['user'] = user_id  # Add user ID to the data
+        data['user'] = user.id  # Add user ID to the data
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -491,14 +465,15 @@ class LectureViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
-        user_id = self.get_token_user()
-        serializer.save(user_id=user_id)
+        serializer.save(user=self.request.user)
 
     def update(self, request, *args, **kwargs):
-        user_id = self.get_token_user()
+        user = request.user
+        if not user.is_authenticated:
+            raise NotAuthenticated(detail='Authentication is required.')
 
         instance = self.get_object()
-        if instance.user_id != user_id:
+        if instance.user != user:
             raise PermissionDenied(detail='You do not have permission to edit this lecture.')
 
         serializer = self.get_serializer(instance, data=request.data, partial=kwargs.get('partial', False))
@@ -511,10 +486,12 @@ class LectureViewSet(viewsets.ModelViewSet):
         return self.update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        user_id = self.get_token_user()
+        user = request.user
+        if not user.is_authenticated:
+            raise NotAuthenticated(detail='Authentication is required.')
 
         instance = self.get_object()
-        if instance.user_id != user_id:
+        if instance.user != user:
             raise PermissionDenied(detail='You do not have permission to delete this lecture.')
 
         self.perform_destroy(instance)
