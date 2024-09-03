@@ -40,6 +40,8 @@ urlpatterns = [
     path('streams/', views.StreamViewSet.as_view({'get': 'list', 'post': 'create'}), name='stream-list'),
     path('streams/<int:pk>/', views.StreamViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='stream-detail'),
 
+    path('user-progress/', views.UserProgressViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update', 'patch': 'partial_update'}), name='user-progress-list-create'),
+
     path('subjects/', views.SubjectViewSet.as_view({'get': 'list', 'post': 'create'}), name='subject-list'),
     path('subjects/<int:pk>/', views.SubjectViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='subject-detail'),
 

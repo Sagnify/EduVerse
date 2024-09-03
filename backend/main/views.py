@@ -340,11 +340,11 @@ class PostViewSet(viewsets.ModelViewSet):
         if existing_upvote:
             # Remove existing upvote
             existing_upvote.delete()
-            return Response({'detail': 'Upvote removed.'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'detail': 'Upvote removed.', 'status': 0}, status=status.HTTP_204_NO_CONTENT)
         else:
             # Add new upvote
             Upvote.objects.create(user=user, post=post)
-            return Response({'detail': 'Post upvoted.'}, status=status.HTTP_201_CREATED)
+            return Response({'detail': 'Post upvoted.', 'status' : 1}, status=status.HTTP_201_CREATED)
 
 
     def downvote(self, request, *args, **kwargs):
@@ -372,11 +372,11 @@ class PostViewSet(viewsets.ModelViewSet):
         if existing_downvote:
             # Remove existing downvote
             existing_downvote.delete()
-            return Response({'detail': 'Downvote removed.'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'detail': 'Downvote removed.', 'status' : 0}, status=status.HTTP_204_NO_CONTENT)
         else:
             # Add new downvote
             Downvote.objects.create(user=user, post=post)
-            return Response({'detail': 'Post downvoted.'}, status=status.HTTP_201_CREATED)
+            return Response({'detail': 'Post downvoted.', 'status': 1}, status=status.HTTP_201_CREATED)
         
 
 
@@ -385,7 +385,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     authentication_classes = [QueryParamTokenAuthentication]
     permission_classes = [IsOwnerOrReadOnly]
     serializer_class = CommentSerializer
-    
+
     def get_queryset(self):
         post_uuid = self.kwargs.get('post_uuid')
         if post_uuid:
@@ -537,7 +537,69 @@ class LectureViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+class UserProgressViewSet(viewsets.ViewSet):
+    authentication_classes = [QueryParamTokenAuthentication]
+    permission_classes = [IsOwnerOrReadOnly]
 
+    def list(self, request):
+        me = request.query_params.get('me')
+        token = request.query_params.get('token')
+
+        # Check if the token is valid
+        if token and not self.is_valid_token(token):
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if me == 'true':
+            # Return progress only for the authenticated user
+            user_progress = UserProgress.objects.filter(user=request.user)
+        else:
+            # Return progress for all users (or implement any necessary filtering here)
+            user_progress = UserProgress.objects.all()
+        
+        serializer = UserProgressSerializer(user_progress, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        user = request.user
+        serializer = UserProgressSerializer(data=request.data)
+        if serializer.is_valid():
+            series = serializer.validated_data.get('series')
+            last_watched_lecture = serializer.validated_data.get('last_watched_lecture')
+            
+            progress, created = UserProgress.objects.get_or_create(
+                user=user,
+                defaults={'series': series, 'last_watched_lecture': last_watched_lecture}
+            )
+            if not created:
+                # If record exists, update the series and progress
+                progress.series = series
+                progress.last_watched_lecture = last_watched_lecture
+                progress.save()
+            
+            return Response(UserProgressSerializer(progress).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        user = request.user
+        
+        try:
+            user_progress = UserProgress.objects.get(user=user)
+        except UserProgress.DoesNotExist:
+            return Response({'detail': 'Progress record not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserProgressSerializer(user_progress, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    
+    def is_valid_token(self, token):
+        # Implement token validation logic here
+        return True
+    
 
 class StreamViewSet(viewsets.ModelViewSet):
     queryset = Stream.objects.all()
