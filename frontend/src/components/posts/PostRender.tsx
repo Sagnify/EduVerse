@@ -1,11 +1,49 @@
-// components/posts/Post.tsx
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import Image from "next/image";
 import { formatReletiveDate } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { ChevronsDown, ChevronsUp } from "lucide-react";
+import useUpvote from "@/core/useUpvote";
+import useDownvote from "@/core/useDownvote";
 
 const Post: React.FC<PostProps> = ({ post }) => {
+  const [totalVote, setTotalVote] = useState(post.total_vote);
+  const [isUpvoted, setIsUpvoted] = useState(post.has_upvoted);
+  const [isDownvoted, setIsDownvoted] = useState(post.has_downvoted);
+
+  const handleUpvote = async () => {
+    if (!isUpvoted) {
+      if (isDownvoted) {
+        setIsDownvoted(false);
+        setTotalVote((prev) => prev + 1); // Adjust vote count when switching from downvote to upvote
+      }
+      setIsUpvoted(true);
+      setTotalVote((prev) => prev + 1);
+    } else {
+      setIsUpvoted(false);
+      setTotalVote((prev) => prev - 1);
+    }
+
+    await useUpvote(post.uuid, isUpvoted, setTotalVote); // Correct number of arguments
+  };
+
+  const handleDownvote = async () => {
+    if (!isDownvoted) {
+      if (isUpvoted) {
+        setIsUpvoted(false);
+        setTotalVote((prev) => prev - 1); // Adjust vote count when switching from upvote to downvote
+      }
+      setIsDownvoted(true);
+      setTotalVote((prev) => prev - 1);
+    } else {
+      setIsDownvoted(false);
+      setTotalVote((prev) => prev + 1);
+    }
+
+    await useDownvote(post.uuid, isDownvoted, setTotalVote); // Correct number of arguments
+  };
+
   return (
     <div
       key={post.uuid}
@@ -48,11 +86,23 @@ const Post: React.FC<PostProps> = ({ post }) => {
       )}
       <hr />
       <div className="flex gap-1 w-fit items-center">
-        <Button variant={"ghost"} className="rounded-full px-2.5 py-1">
+        <Button
+          variant="ghost"
+          className={`rounded-full px-2.5 py-1 ${
+            isUpvoted ? "bg-green-500 text-white" : "bg-gray-200"
+          }`}
+          onClick={handleUpvote}
+        >
           <ChevronsUp size={20} />
         </Button>
-        <span className="text-lg mx-2">{post.total_vote}</span>
-        <Button variant={"ghost"} className="rounded-full px-2.5 py-1">
+        <span className="text-lg mx-2">{totalVote}</span>
+        <Button
+          variant="ghost"
+          className={`rounded-full px-2.5 py-1 ${
+            isDownvoted ? "bg-red-500 text-white" : "bg-gray-200"
+          }`}
+          onClick={handleDownvote}
+        >
           <ChevronsDown size={20} />
         </Button>
       </div>
