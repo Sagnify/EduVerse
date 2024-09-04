@@ -367,7 +367,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             try:
                 post = Post.objects.get(uuid=post_uuid)
                 # Fetch top-level comments only, no replies
-                return Comment.objects.filter(post=post, parent__isnull=True)
+                return Comment.objects.filter(post=post)
             except Post.DoesNotExist:
                 return Comment.objects.none()
 

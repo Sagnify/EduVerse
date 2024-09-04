@@ -184,18 +184,12 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    # replies = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = ['id', 'post', 'user', 'created_at', 'comment_caption']
         read_only_fields = ['user', 'created_at']
-
-    # def get_replies(self, obj):
-    #     replies = Comment.objects.filter(parent=obj)
-    #     serializer = CommentSerializer(replies, many=True)
-    #     return serializer.data
 
     def get_user(self, obj):
         return obj.user.username
@@ -209,6 +203,7 @@ class CommentSerializer(serializers.ModelSerializer):
         # Ensure that the user cannot be changed during update
         validated_data.pop('user', None)
         return super().update(instance, validated_data)
+
 
 
 class LectureSerializer(serializers.ModelSerializer):
