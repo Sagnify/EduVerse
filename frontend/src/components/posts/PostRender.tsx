@@ -8,22 +8,41 @@ import useUpvote from "@/core/useUpvote";
 import useDownvote from "@/core/useDownvote"; // Import the useDownvote hook
 
 const Post: React.FC<PostProps> = ({ post }) => {
-  // Lift the totalVote state up to the Post component
   const [totalVote, setTotalVote] = useState(post.total_vote);
+  const [isUpvoted, setIsUpvoted] = useState(post.has_upvoted);
+  const [isDownvoted, setIsDownvoted] = useState(post.has_downvoted);
 
-  const { isUpvoted, handleUpvote } = useUpvote(
+  const { handleUpvote } = useUpvote(
     post.uuid,
-    totalVote, // Pass the lifted totalVote state
-    post.has_upvoted,
-    setTotalVote // Pass setTotalVote to update the vote count
+    totalVote,
+    isUpvoted,
+    setTotalVote
   );
 
-  const { isDownvoted, handleDownvote } = useDownvote(
+  const { handleDownvote } = useDownvote(
     post.uuid,
-    totalVote, // Pass the lifted totalVote state
-    post.has_downvoted,
-    setTotalVote // Pass setTotalVote to update the vote count
+    totalVote,
+    isDownvoted,
+    setTotalVote
   );
+
+  const handleUpvoteClick = () => {
+    if (isDownvoted) {
+      setIsDownvoted(false); // Reset downvote if the post was previously downvoted
+      setTotalVote((prev) => prev + 1); // Increment vote by 1 to nullify the previous downvote
+    }
+    handleUpvote();
+    setIsUpvoted(!isUpvoted); // Toggle the upvote state
+  };
+
+  const handleDownvoteClick = () => {
+    if (isUpvoted) {
+      setIsUpvoted(false); // Reset upvote if the post was previously upvoted
+      setTotalVote((prev) => prev - 1); // Decrement vote by 1 to nullify the previous upvote
+    }
+    handleDownvote();
+    setIsDownvoted(!isDownvoted); // Toggle the downvote state
+  };
 
   return (
     <div
@@ -72,7 +91,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           className={`rounded-full px-2.5 py-1 ${
             isUpvoted ? "bg-green-500 text-white" : "bg-gray-200"
           }`}
-          onClick={handleUpvote}
+          onClick={handleUpvoteClick}
         >
           <ChevronsUp size={20} />
         </Button>
@@ -82,7 +101,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           className={`rounded-full px-2.5 py-1 ${
             isDownvoted ? "bg-red-500 text-white" : "bg-gray-200"
           }`}
-          onClick={handleDownvote}
+          onClick={handleDownvoteClick}
         >
           <ChevronsDown size={20} />
         </Button>
@@ -92,3 +111,4 @@ const Post: React.FC<PostProps> = ({ post }) => {
 };
 
 export default Post;
+
