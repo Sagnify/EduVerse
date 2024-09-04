@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import useUserFetcher from "@/core/fetchUser";
 import Loading from "@/components/Loader";
 import PostList from "@/components/posts/PostList";
-import NewPost from "@/components/posts/CurrentLearning";
-import LeftBar from "@/components/LeftBar";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import Current from "@/components/posts/CurrentLearning";
 
 const Page = () => {
   const { user, loading, error } = useUserFetcher();
@@ -46,11 +45,12 @@ const Page = () => {
           <span className="text-center">Ready to learn something new?</span>
           <PostList />
         </div>
-        <div className="w-fit">
-          <span className="text-center">
+        <div className="w-fit sticky top-9 self-start">
+          {" "}
+          <span className="text-center block mb-2">
             Or continue learning from where you left,
           </span>
-          <NewPost />
+          <Current />
         </div>
       </div>
     </div>
