@@ -34,3 +34,11 @@ interface PostProps {
     has_downvoted: boolean;
   };
 }
+
+interface Comment {
+  id: number;
+  post: number;
+  user: User;
+  created_at: string;
+  comment_caption: string;
+}

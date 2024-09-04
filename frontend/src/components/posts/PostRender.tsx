@@ -118,7 +118,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           </button>
         </div>
         <button
-          className={`rounded-full p-1.5 bg-green-500 hover:bg-green-600 text-white }`}
+          className={`rounded-full p-1.5 bg-primary text-secondary }`}
         >
           <MessageSquare size={20} />
         </button>

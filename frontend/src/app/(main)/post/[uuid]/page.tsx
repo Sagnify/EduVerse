@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Post from "@/components/posts/PostRender";
 import { fetchPostByUuid } from "@/core/fetchPosts";
+import Comments from "@/components/posts/Comments";
 
 export default function Page({ params }: { params: { uuid: string } }) {
   const [post, setPost] = useState<any | null>(null);
@@ -33,8 +34,9 @@ export default function Page({ params }: { params: { uuid: string } }) {
   }
 
   return (
-    <div className="">
+    <div className="w-[40rem]">
       <Post post={post} />
+      <Comments uuid={params.uuid} />
     </div>
   );
 }
