@@ -5,6 +5,7 @@ import { useState } from "react";
 import SearchField from "./searchField";
 import Icon from "./Icon";
 import { useRouter } from "next/navigation"; // Import useRouter
+import UserButton from "./UserButton";
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -19,7 +20,7 @@ export default function Navbar() {
         >
           <Icon className="" size={30} />
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
           <Button
             className="block xl:hidden"
             variant="ghost"
@@ -30,11 +31,9 @@ export default function Navbar() {
           <div className="hidden xl:block">
             <SearchField />
           </div>
-          {/* <Button className="gap-2 text-lg">
-            <Plus />
-            <div>
-            Ask a Question</div>
-          </Button> */}
+          <Button variant="ghost" className="flex flex-col items-center">
+            <UserButton />
+          </Button>
         </div>
       </div>
 

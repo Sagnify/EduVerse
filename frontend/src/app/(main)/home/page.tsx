@@ -33,15 +33,15 @@ const Page = () => {
 
   return (
     <div className="">
-      <div className="flex flex-col items-center gap-2 w-full text-center justify-center mb-7">
+      {/* <div className="flex flex-col items-center gap-2 w-full text-center justify-center mb-7 mr-96">
         <h1 className="text-3xl font-bold">Welcome, {user!.first_name}!</h1>
         <Button className="gap-2 text-xs">
           <Plus size={20} />
           Ask a Question
         </Button>
-      </div>
+      </div> */}
       <div className="flex w-full gap-4">
-        <div className="w-full">
+        <div className="w-full ">
           <span className="text-center">Ready to learn something new?</span>
           <PostList />
         </div>

@@ -1,6 +1,6 @@
 // Leftbar.js
 import Link from "next/link";
-import { Bell, House, LibraryBig, SquarePlay, User } from "lucide-react";
+import { Bell, House, LibraryBig, Plus, SquarePlay, User } from "lucide-react";
 import { Button } from "./ui/button";
 import UserButton from "./UserButton";
 
@@ -9,6 +9,12 @@ export default function Leftbar() {
     <>
       {/* Desktop/Tablet Navigation (Left sidebar) */}
       <div className="hidden md:flex flex-col gap-4 w-72 ">
+        <Link href={`/home`}>
+          <Button className="gap-2 text-xs">
+            <Plus size={20} />
+            Ask a Question
+          </Button>
+        </Link>
         <Link href={`/home`}>
           <Button variant="ghost" className="w-full px-2 gap-2 justify-normal">
             <House />
@@ -32,9 +38,6 @@ export default function Leftbar() {
             <Bell /> Notifications
           </Button>
         </Link>
-        <Button variant="ghost" className="w-full px-2 gap-2 justify-normal">
-          <UserButton />
-        </Button>
       </div>
 
       {/* Mobile Navigation (Bottom bar) */}
@@ -49,6 +52,11 @@ export default function Leftbar() {
             <LibraryBig />
           </Button>
         </Link>
+        <Link href={`/home`}>
+          <Button className="gap-2 text-xs">
+            <Plus size={20} />
+          </Button>
+        </Link>
         <Link href={`/lectures`}>
           <Button variant="ghost" className="flex flex-col items-center">
             <SquarePlay />
@@ -59,9 +67,6 @@ export default function Leftbar() {
             <Bell />
           </Button>
         </Link>
-        <Button variant="ghost" className="flex flex-col items-center">
-          <UserButton />
-        </Button>
       </div>
     </>
   );

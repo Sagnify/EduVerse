@@ -41,10 +41,11 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
   return (
     <div className="group/post space-y-3 rounded-2xl mt-5 bg-card p-5 shadow-[0_3px_15px_rgb(0,0,0,0.12)]">
       <h1 className="text-2xl font-bold">Thoughts</h1>
-      <div className="flex flex-col space-y-3">
+      <div className="flex flex-col">
         {comments.length > 0 ? (
-          comments.map((comment) => {
+          comments.map((comment, index) => {
             const isCurrentUser = comment.user.username === currentUsername;
+            const isLastFromUser = isLastCommentFromUser(index);
             return (
               <div
                 key={comment.id}
@@ -53,11 +54,33 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
                 } w-full`}
               >
                 <div
-                  className={`${
+                  className={`
+                    
+                  ${
                     isCurrentUser
-                      ? "bg-blue-500 text-white rounded-br-none"
-                      : "bg-gray-700/10 rounded-bl-none"
-                  } max-w-xs p-2 rounded-3xl px-4`}
+                      ? "bg-blue-500 text-white w-full"
+                      : "bg-gray-700/10 w-full"
+                  } max-w-xs p-2 rounded-xl px-4 
+
+                  ${
+                    !isCurrentUser && !isLastFromUser
+                      ? "mb-1"
+                      : "rounded-bl-none mb-3"
+                  }
+                  
+                  ${
+                    isCurrentUser && isLastFromUser
+                      ? "rounded-br-none rounded-bl-xl "
+                      : ""
+                  } 
+
+                  ${
+                    isCurrentUser && !isLastFromUser
+                      ? "rounded-bl-xl "
+                      : ""
+                  } 
+                      
+                  `}
                 >
                   <div className="flex gap-3 items-center m-0 p-0">
                     <p className="flex items-center gap-1 font-medium">

@@ -19,7 +19,7 @@ export default function Icon({ className, size = 30 }: IconProps) {
         <div className="flex items-center gap-2">
           <Image src={`/icon.png`} alt={"icon"} width="35" height="35" />
           <div className="flex">
-            <h1 className="" style={{ fontSize: `${textSize}px` }}>
+            <h1 className="text-lg md:text-3xl" >
               EduVerse
             </h1>
             <h1
