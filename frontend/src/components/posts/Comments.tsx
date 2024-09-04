@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { fetchComments } from "@/core/fetchComment";
 import useUserFetcher from "@/core/fetchUser";
 import { formatReletiveDate } from "@/lib/utils";
+import CommentInput from "./CommentInput";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface CommentsProps {
   uuid: string;
@@ -11,6 +13,7 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { user, loading, error: userError } = useUserFetcher();
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -32,6 +35,12 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
       clearInterval(intervalId); // Clear the interval on component unmount
     };
   }, [uuid]);
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
+  }, [comments]);
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -55,7 +64,10 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
   return (
     <div className="group/post space-y-3 rounded-2xl mt-5 bg-card p-5 shadow-[0_3px_15px_rgb(0,0,0,0.12)]">
       <h1 className="text-2xl font-bold">Thoughts</h1>
-      <div className="flex flex-col">
+      <ScrollArea
+        ref={scrollAreaRef}
+        className="flex flex-col overflow-y-auto h-[55vh]" // Adjust height as needed
+      >
         {comments.length > 0 ? (
           comments.map((comment, index) => {
             const isCurrentUser = comment.user.username === currentUsername;
@@ -113,6 +125,9 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
         ) : (
           <p>No comments yet.</p>
         )}
+      </ScrollArea>
+      <div className="sticky bottom-0 w-full bg-white">
+        <CommentInput postId={uuid} />
       </div>
     </div>
   );

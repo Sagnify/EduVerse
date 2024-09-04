@@ -1,9 +1,10 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from "react";
 import Post from "@/components/posts/PostRender";
 import { fetchPostByUuid } from "@/core/fetchPosts";
 import Comments from "@/components/posts/Comments";
 import CommentInput from "@/components/posts/CommentInput";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Page({ params }: { params: { uuid: string } }) {
   const [post, setPost] = useState<any | null>(null);
@@ -35,10 +36,13 @@ export default function Page({ params }: { params: { uuid: string } }) {
   }
 
   return (
-    <div className="w-[40rem]">
-      <Post post={post} />
-      <CommentInput postId={params.uuid} />
-      <Comments uuid={params.uuid} />
+    <div className="max-w-4xl mx-auto flex w-full gap-4">
+      <div className="w-full flex flex-col">
+        <Comments uuid={params.uuid} />
+      </div>
+      <div className="w-[75%] sticky top-16 self-start">
+        <Post post={post} />
+      </div>
     </div>
   );
 }

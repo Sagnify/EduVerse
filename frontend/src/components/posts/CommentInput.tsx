@@ -31,7 +31,7 @@ const CommentInput = ({ postId }: { postId: string }) => {
   };
 
   return (
-    <div className="group/post space-y-3 flex flex-col items-end rounded-2xl mt-5 bg-card p-5 shadow-[0_3px_15px_rgb(0,0,0,0.12)]">
+    <div className=" flex items-center gap-2 pt-2">
       <Textarea
         className="w-full"
         placeholder={`Pen a thought, ${user?.username}`}
