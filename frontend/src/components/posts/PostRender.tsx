@@ -89,7 +89,9 @@ const Post: React.FC<PostProps> = ({ post }) => {
         <Button
           variant="ghost"
           className={`rounded-full px-2.5 py-1 ${
-            isUpvoted ? "bg-green-500 text-white" : "bg-gray-200"
+            isUpvoted
+              ? "bg-green-500 hover:bg-green-600 hover:text-white text-white"
+              : "bg-gray-200"
           }`}
           onClick={handleUpvoteClick}
         >
@@ -99,7 +101,9 @@ const Post: React.FC<PostProps> = ({ post }) => {
         <Button
           variant="ghost"
           className={`rounded-full px-2.5 py-1 ${
-            isDownvoted ? "bg-red-500 text-white" : "bg-gray-200"
+            isDownvoted
+              ? "bg-red-500 hover:bg-red-600 hover:text-white text-white"
+              : "bg-gray-200"
           }`}
           onClick={handleDownvoteClick}
         >
