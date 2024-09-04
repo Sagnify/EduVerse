@@ -30,5 +30,7 @@ interface PostProps {
     created_at: string;
     total_vote: number;
     post_img_url?: string;
+    has_upvoted: boolean;
+    has_downvoted: boolean;
   };
 }
