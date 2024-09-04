@@ -366,44 +366,33 @@ class CommentViewSet(viewsets.ModelViewSet):
         if post_uuid:
             try:
                 post = Post.objects.get(uuid=post_uuid)
-                # Fetch top-level comments only
-                return Comment.objects.filter(post=post, parent__isnull=True)
+                # Fetch top-level comments only, no replies
+                return Comment.objects.filter(post=post)
             except Post.DoesNotExist:
                 return Comment.objects.none()
-        
+
         # For other actions (retrieve, update, delete), allow access to all comments
         return Comment.objects.all()
+
     def create(self, request, *args, **kwargs):
         post_uuid = request.data.get('post')
-        parent_id = request.data.get('parent')
 
         # Get the user from the authenticated request
         user = request.user
         if not user.is_authenticated:
             return Response({'detail': 'Authentication is required.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Fetch the post and optionally the parent comment
+        # Fetch the post
         try:
             post = Post.objects.get(uuid=post_uuid)
         except Post.DoesNotExist:
             return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        parent_comment = None
-        if parent_id:
-            try:
-                parent_comment = Comment.objects.get(id=parent_id)
-            except Comment.DoesNotExist:
-                return Response({'detail': 'Parent comment not found.'}, status=status.HTTP_404_NOT_FOUND)
-
         # Prepare data for the serializer
         data = request.data.copy()
         data['post'] = post.id
         data['user'] = user.id
-        
-        if parent_comment:
-            data['parent'] = parent_comment.id
-        else:
-            data['parent'] = None
+        data['parent'] = None  # Ensure no parent comment (no replies)
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -432,6 +421,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 
