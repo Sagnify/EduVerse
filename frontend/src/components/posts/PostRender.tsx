@@ -85,11 +85,12 @@ const Post: React.FC<PostProps> = ({ post }) => {
 
       {post.post_img_url && (
         <Image
-          src="/"
+          src={post.post_img_url}
           alt="Post image"
           layout="responsive"
           width={600}
           height={400}
+          className="rounded-xl"
         />
       )}
       <hr />
