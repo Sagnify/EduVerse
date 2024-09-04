@@ -1,7 +1,8 @@
 // services/api.ts
-export const fetchAllPosts = async (): Promise<any[]> => {
-  const token = localStorage.getItem("token");
 
+const token = localStorage.getItem("token");
+
+export const fetchAllPosts = async (): Promise<any[]> => {
   if (!token) {
     throw new Error("No token found in localStorage");
   }
@@ -21,4 +22,14 @@ export const fetchAllPosts = async (): Promise<any[]> => {
     console.error("Error fetching posts:", error);
     throw error; // Re-throw to be handled in component
   }
+};
+
+export const fetchPostByUuid = async (uuid: string) => {
+  const response = await fetch(
+    `https://eduverse-a4l5.onrender.com/api/posts/${uuid}/?token=${token}`
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch the post");
+  }
+  return await response.json();
 };
