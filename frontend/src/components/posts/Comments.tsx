@@ -4,6 +4,8 @@ import useUserFetcher from "@/core/fetchUser";
 import { formatReletiveDate } from "@/lib/utils";
 import CommentInput from "./CommentInput";
 import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "../ui/button";
+import { CornerRightUp } from "lucide-react";
 
 interface CommentsProps {
   uuid: string;
@@ -13,28 +15,23 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { user, loading, error: userError } = useUserFetcher();
-  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
-  const bottomRef = useRef<HTMLDivElement | null>(null); // Add a ref for the bottom element
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null); // Scrollable area reference
+  const bottomRef = useRef<HTMLDivElement | null>(null); // Bottom element reference
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false); // Show "Scroll to Bottom" button
 
+  // Fetch comments function
+  const fetchAndUpdateComments = async () => {
+    try {
+      const fetchedComments = await fetchComments(uuid);
+      setComments(fetchedComments);
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
+  // Fetch comments on initial mount
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    const fetchAndUpdateComments = async () => {
-      try {
-        const fetchedComments = await fetchComments(uuid);
-        setComments(fetchedComments);
-      } catch (err) {
-        setError((err as Error).message);
-      }
-    };
-
-    fetchAndUpdateComments(); // Fetch comments immediately on mount
-
-    intervalId = setInterval(fetchAndUpdateComments, 5000); // Set up interval to fetch comments every 5 seconds
-
-    return () => {
-      clearInterval(intervalId); // Clear the interval on component unmount
-    };
+    fetchAndUpdateComments();
   }, [uuid]);
 
   // Scroll to bottom when comments change
@@ -43,6 +40,39 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [comments]);
+
+  // Track the scroll position and show/hide "scroll to bottom" button
+  const handleScroll = () => {
+    if (scrollAreaRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
+      setShowScrollToBottom(scrollHeight - scrollTop > clientHeight + 100);
+    }
+  };
+
+  // Scroll to bottom when the button is clicked
+  const scrollToBottom = () => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // Attach the scroll listener to the scrollable area
+  useEffect(() => {
+    const scrollableElement = scrollAreaRef.current;
+    if (scrollableElement) {
+      scrollableElement.addEventListener("scroll", handleScroll);
+    }
+    return () => {
+      if (scrollableElement) {
+        scrollableElement.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
+
+  // Callback to refresh comments after a new comment is posted
+  const handleNewComment = () => {
+    fetchAndUpdateComments();
+  };
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -68,7 +98,7 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
       <h1 className="text-2xl font-bold">Thoughts</h1>
       <ScrollArea
         ref={scrollAreaRef}
-        className="flex flex-col overflow-y-auto h-[55vh]" // Adjust height as needed
+        className="flex flex-col overflow-y-auto h-[55vh]"
       >
         {comments.length > 0 ? (
           comments.map((comment, index) => {
@@ -127,11 +157,18 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
         ) : (
           <p>No comments yet.</p>
         )}
-        {/* Dummy element for scrolling */}
+        <Button
+          onClick={scrollToBottom}
+          className="fixed bottom-40 right-36 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg"
+        >
+          <CornerRightUp />
+        </Button>
         <div ref={bottomRef} />
       </ScrollArea>
+
       <div className="sticky bottom-0 w-full bg-white">
-        <CommentInput postId={uuid} />
+        {/* Pass handleNewComment as a prop to CommentInput */}
+        <CommentInput postId={uuid} onNewComment={handleNewComment} />
       </div>
     </div>
   );

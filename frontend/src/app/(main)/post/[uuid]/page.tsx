@@ -37,11 +37,11 @@ export default function Page({ params }: { params: { uuid: string } }) {
 
   return (
     <div className="max-w-4xl mx-auto flex w-full gap-4">
+      <div className="w-full sticky top-16 self-start">
+        <Post post={post} />
+      </div>
       <div className="w-full flex flex-col">
         <Comments uuid={params.uuid} />
-      </div>
-      <div className="w-[75%] sticky top-16 self-start">
-        <Post post={post} />
       </div>
     </div>
   );
