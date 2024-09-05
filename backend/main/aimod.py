@@ -1,34 +1,18 @@
 import google.generativeai as genai
 from google.cloud import vision
-from google.oauth2 import service_account
+import os
 import requests
 import logging
-from django.conf import settings
-import json
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Load credentials from settings
-google_credentials_json = settings.GOOGLE_APPLICATION_CREDENTIALS_JSON
+# Set environment variable for Google Cloud Vision API credentials
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './backend/cloud-vision-api.json'
 
 # Initialize the Gemini model
 model = genai.GenerativeModel("gemini-1.5-flash")
-
-try:
-    # Load JSON data from the string
-    google_credentials_dict = json.loads(google_credentials_json)
-    credentials = service_account.Credentials.from_service_account_info(google_credentials_dict)
-except json.JSONDecodeError as e:
-    logger.error(f"Error decoding JSON from environment variable: {e}")
-    raise
-except Exception as e:
-    logger.error(f"An error occurred while loading credentials: {e}")
-    raise
-
-# Initialize the Google Vision API client with credentials
-vision_client = vision.ImageAnnotatorClient(credentials=credentials)
 
 def moderate_post_with_gemini(post_content, has_educational_labels=False):
     try:
@@ -74,6 +58,9 @@ def moderate_post_with_gemini(post_content, has_educational_labels=False):
 
 def analyze_image_with_vision(image_url):
     try:
+        # Initialize Google Vision API client
+        client = vision.ImageAnnotatorClient()
+
         # Download the image
         response = requests.get(image_url)
         response.raise_for_status()  # Raise an error for bad responses
@@ -85,7 +72,7 @@ def analyze_image_with_vision(image_url):
         image = vision.Image(content=content)
 
         # Perform label detection on the image
-        vision_response = vision_client.label_detection(image=image)
+        vision_response = client.label_detection(image=image)
         labels = vision_response.label_annotations
 
         # Print labels for debugging

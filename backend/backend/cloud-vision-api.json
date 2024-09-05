@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "cloud-vision-434707",
+  "private_key_id": "3406000bb97fb0ccdb7860812b4feae63ad56e64",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDt55A0EU6tHUAe\nZ1sDf7qAYCEi3txvoRkt17DIlaX6kUqJNzS/JGCpxgf+Wuk6B98pWM/Aq4Ilr2cH\nj9vC4FgdSLHk0C3mnm/MF+utgfO5fO3RwAaM7AcCH52otXaLq6WPoF+uG02vF3ii\nsaIY4MfEZB3oU6nT7GgsO4ZqyEHpMqpH0iBsjPGjp+Nr9Z6lgPQL/hGiOtonlw0A\nwOb3HHjZby+kFgK6sYSsZq7XuSqdg+3gC/d33aSlLSLF5VCvkU6WoNwLT2QinHfV\n8kkjRzaNM0/zs1ZCp9r2YJK/gksybtpddEW7uu6wcJLXuwDb+1HlOwYhifF4Uru7\nHxcI4yRLAgMBAAECggEADq8FMoGC9qJgi7/bWTrv+u5z/R/+QRGTaUXvzmGWLgH7\ntL5ojgejw7bKVYOs83z65CVsJTswvDy4Qjo52SxZo+0Rtcq3mo1a3yD21e24alFw\nqEqO3PHQeOwUog4ZNAOzI0tFvIxI3i63rmsCU0DEc7WuNuG7EK59u4UtBbg4gTkV\n2qEeNr/pzZVm7juGNGqLbyfnb/Dd8U85YYFW1HozSnFPzfmURiF6g35WXg0Fe1Ni\nzf4gkbxW0WkEnO8QpWhgRggSMUpsnDEGPiKrqxOaS725j93hD25uLAPRWu0uisd3\nDeNB6Pm37ebmHaDOr3xYuVZdblVK7LhZIECwOpdoKQKBgQD8dRxGusDfnYHYmkso\nDdTuJZBTXBAcTjXQ2M2VNj++PZDHjYdogzdPZigMTk539rFfncSet7254+FXaMsc\nhJw8yOO2OK57v4NF6RqZdusS5SlsUBxlHiI9MKqycOXsvbgDJu8ikWkT7m81vVQw\n2xk0oZn6HqFm7U3Umil2WwIQVwKBgQDxPizXfOFdDVm3TU1Gj4YPSSL2a508qsoP\nPRs7nTqpu8qEvUvxwytv4X/kxlaqRpHd+lMVKuW4ZMeFXsSqO7orKAdvBitTLaSn\ngRGLPEJ76+HPCHFaf19aJwxN3/MLPBItAlncdTaFJza24B5DvRmKlSNvVFBxm1SH\nZjVUBQzDLQKBgQDWt9RA4/2/MvuI+lIJ0xnTIufJvneFW4+x/XN9ARLd/wbwcpNE\ndLXKNhzBuqhKp+rcZBci1yvqusKh0WNO8grgOAxUo4jjf1NrVoNlGxt8iqPcl5ZO\n+n4shQPpmNQ1snabV7X0NLCmXxj/H/RHSVH6zadkcEDehd64gBXbsDPlKQKBgQCr\naQgnnL3shh3nFm//4N7aYZcMDG7OunOT3FFLTG5wR9Sf+HjLsWdduZZMEXlmx3nB\nhaoe8joDiOgTpcCLTKD9JRYTFwkVsuq5cgXrLsf2kSYDGvaf3Lz9q50cgDGLHAW2\nIWOEN2yjs7c2vYwDiYtqYompAvmdn0ayZjciGex1iQKBgQCVS7MDtIAt98DJeT/o\nR82s6vCFwwjkHEqHnVJ5pBkSTf/J697zFiKbddBpidfLbpKQ5F6xTJSeX1J8sKgO\nROjPFAbGPIR52zcf9AMUG8VDl3QHAzwX6qX4SHAl6YjaXIe0oE3KcKNrPQfdPDOM\n28lvm4+MXEps9Yxnsxf+PGijjQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "sagnik@cloud-vision-434707.iam.gserviceaccount.com",
+  "client_id": "117476990308657522987",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/sagnik%40cloud-vision-434707.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
