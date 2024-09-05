@@ -14,6 +14,7 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
   const [error, setError] = useState<string | null>(null);
   const { user, loading, error: userError } = useUserFetcher();
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null); // Add a ref for the bottom element
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -36,9 +37,10 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
     };
   }, [uuid]);
 
+  // Scroll to bottom when comments change
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [comments]);
 
@@ -125,6 +127,8 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
         ) : (
           <p>No comments yet.</p>
         )}
+        {/* Dummy element for scrolling */}
+        <div ref={bottomRef} />
       </ScrollArea>
       <div className="sticky bottom-0 w-full bg-white">
         <CommentInput postId={uuid} />
