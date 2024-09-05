@@ -13,8 +13,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import environ
 import os
+import google.generativeai as genai
 
 env = environ.Env(
+    AI_API=(str),
     POSTGRES_NAME=(str),
     POSTGRES_USER=(str),
     POSTGRES_PASSWORD=(str),
@@ -22,8 +24,16 @@ env = environ.Env(
     POSTGRES_PORT=(int, 5432),
 )
 
-# Read .env file if it exists
+# Read .env file
 environ.Env.read_env()
+
+# Print to verify the environment variable is loaded
+print("AI_API:", env('AI_API'))
+
+# Configure the API key for Gemini AI
+api_key = env('AI_API')
+genai.configure(api_key=api_key)
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

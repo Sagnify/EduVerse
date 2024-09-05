@@ -23,8 +23,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework.views import APIView
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
+from .aimod import *
 
 
 class CustomObtainAuthToken(APIView):
@@ -262,6 +261,7 @@ class PostViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
     def create(self, request, *args, **kwargs):
+        # Get token from query parameters
         token_key = request.query_params.get('token')
         if not token_key:
             return Response({'detail': 'Token query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -274,12 +274,36 @@ class PostViewSet(viewsets.ModelViewSet):
             logger.error(f"Invalid token: {token_key}")
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create a mutable copy of the request data
+        # Create a mutable copy of the request data and attach user ID
         mutable_data = request.data.copy()
         mutable_data['user'] = user.id
         
         logger.debug(f"Request data: {mutable_data}")
 
+        # Check for an image URL in the request
+        image_url = mutable_data.get('post_img_url')
+        if image_url:
+            # Analyze the image to get a description and determine if it is educational
+            image_description, has_educational_labels = analyze_image_with_vision(image_url)
+            
+            if image_description:
+                # Use Gemini to check if the image description is educational
+                is_image_educational = moderate_post_with_gemini(image_description, has_educational_labels)
+                
+                if not is_image_educational:
+                    logger.error(f"Image description failed moderation: {image_description}")
+                    return Response({'detail': 'Image content is not educational.'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                logger.error("Failed to analyze the image.")
+                return Response({'detail': 'Failed to analyze the image.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Moderation step: check 'caption' with Gemini AI
+        caption = mutable_data.get('caption')
+        if caption and not moderate_post_with_gemini(caption):
+            logger.error(f"Post caption failed moderation: {caption}")
+            return Response({'detail': 'Post caption is not educational.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Serialize and save the data
         serializer = self.get_serializer(data=mutable_data)
         if serializer.is_valid():
             logger.debug(f"Serializer is valid. Data: {serializer.validated_data}")
@@ -289,6 +313,8 @@ class PostViewSet(viewsets.ModelViewSet):
         else:
             logger.error(f"Serializer errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
     
     def upvote(self, request, *args, **kwargs):
         post_uuid = kwargs.get('pk')
