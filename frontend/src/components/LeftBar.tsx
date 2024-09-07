@@ -2,14 +2,13 @@
 import Link from "next/link";
 import { Bell, House, LibraryBig, Plus, SquarePlay, User } from "lucide-react";
 import { Button } from "./ui/button";
-import UserButton from "./UserButton";
 
 export default function Leftbar() {
   return (
     <>
       {/* Desktop/Tablet Navigation (Left sidebar) */}
       <div className="hidden md:flex flex-col gap-4 w-72 ">
-        <Link href={`/home`}>
+        <Link href={`/new`}>
           <Button className="gap-2 text-xs">
             <Plus size={20} />
             Ask a Question
@@ -52,7 +51,7 @@ export default function Leftbar() {
             <LibraryBig />
           </Button>
         </Link>
-        <Link href={`/home`}>
+        <Link href={`/new`}>
           <Button className="gap-2 text-xs">
             <Plus size={20} />
           </Button>

@@ -5,7 +5,7 @@ import { formatReletiveDate } from "@/lib/utils";
 import CommentInput from "./CommentInput";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
-import { CornerRightUp } from "lucide-react";
+import { CornerRightDown } from "lucide-react";
 
 interface CommentsProps {
   uuid: string;
@@ -161,7 +161,7 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
           onClick={scrollToBottom}
           className="fixed bottom-40 right-36 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg"
         >
-          <CornerRightUp />
+          <CornerRightDown />
         </Button>
         <div ref={bottomRef} />
       </ScrollArea>

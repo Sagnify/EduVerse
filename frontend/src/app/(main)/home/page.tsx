@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import useUserFetcher from "@/core/fetchUser";
 import Loading from "@/components/Loader";
 import PostList from "@/components/posts/PostList";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import Current from "@/components/posts/CurrentLearning";
 
 const Page = () => {

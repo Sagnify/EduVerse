@@ -3,8 +3,6 @@ import React, { useEffect, useState } from "react";
 import Post from "@/components/posts/PostRender";
 import { fetchPostByUuid } from "@/core/fetchPosts";
 import Comments from "@/components/posts/Comments";
-import CommentInput from "@/components/posts/CommentInput";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Page({ params }: { params: { uuid: string } }) {
   const [post, setPost] = useState<any | null>(null);
