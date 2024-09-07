@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 logger = logging.getLogger(__name__)
 
 # Set environment variable for Google Cloud Vision API credentials
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './backend/cloud-vision-api.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/etc/secrets/google-cloud-vision.json'
 
 # Initialize the Gemini model
 model = genai.GenerativeModel("gemini-1.5-flash")
