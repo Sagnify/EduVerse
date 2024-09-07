@@ -115,7 +115,7 @@ export default function NewPostPage() {
           )}
         </div>
 
-        <div className="mb-4 h-96">
+        <div className="mb-4 h-96 flex items-center justify-center w-full">
           {!imagePreview && (
             <input
               type="file"
@@ -129,9 +129,9 @@ export default function NewPostPage() {
               <Image
                 src={imagePreview}
                 alt="Image Preview"
-                height={200}
-                width={200}
-                className=" rounded-md"
+                height={400}
+                width={400}
+                className=" rounded-md max-h-[400px] max-w-[400px]"
               />
               <Button
                 onClick={() => {
