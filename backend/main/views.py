@@ -199,7 +199,7 @@ class UserProfileStudentViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     authentication_classes = [QueryParamTokenAuthentication]
     permission_classes = [IsAuthenticated]
-    queryset = Post.objects.all()
+    queryset = Post.objects.all().order_by('-created_at')
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
