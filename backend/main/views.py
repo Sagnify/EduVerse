@@ -668,6 +668,49 @@ class LibAssetViewSet(viewsets.ModelViewSet):
 
         self.perform_destroy(asset)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def list(self, request, *args, **kwargs):
+        # Extract token from query parameters
+        token_key = request.query_params.get('token', None)
+        print(f"Token received: {token_key}")
+
+        if token_key:
+            try:
+                # Retrieve the token and associated user
+                token = Token.objects.get(key=token_key)
+                user = token.user
+                print(f"User retrieved: {user.username}")
+            except Token.DoesNotExist:
+                return Response({"detail": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Access the user's standard from their profile
+            user_standard = getattr(user.student_profile, 'standard', None)
+            print(f"User's standard: {user_standard}")
+
+            if user_standard:
+                # Filter queryset based on the user's standard field
+                queryset = self.queryset.filter(standard=user_standard)
+                print(f"Filtered queryset count: {queryset.count()}")
+
+                if not queryset.exists():
+                    # If no rows match, return all rows
+                    print("No matching assets found. Returning all rows.")
+                    queryset = self.queryset
+            else:
+                # If the user doesn't have a standard, return all rows
+                print("User does not have a standard. Returning all rows.")
+                queryset = self.queryset
+        else:
+            # If no token is provided, return all rows
+            print("No token provided. Returning all rows.")
+            queryset = self.queryset
+
+        # Serialize and return the data
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+
 
 
 
