@@ -115,6 +115,7 @@ class LibAsset(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     stream = models.TextField(null=True, blank=True)
+    subject = models.TextField(null=True, blank=True)
     standard = models.TextField(null=True, blank=True)
 
     is_verified = models.BooleanField(default=True)
