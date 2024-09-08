@@ -302,7 +302,7 @@ class StandardSerializer(serializers.ModelSerializer):
 class LibAssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = LibAsset
-        fields = ['id','uuid', 'user', 'visibility', 'asset_url', 'created_at', 'title', 'description', 'stream', 'standard', 'is_verified']
+        fields = ['id','uuid', 'user', 'visibility', 'asset_url', 'created_at', 'title', 'description', 'is_verified']
         read_only_fields = ['id', 'created_at', 'user', 'uuid', 'is_verified']
 
 

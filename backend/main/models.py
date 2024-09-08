@@ -114,8 +114,8 @@ class LibAsset(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
-    stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
-    standard = models.ForeignKey(Standard, on_delete=models.CASCADE)
+    stream = models.ForeignKey(Stream, on_delete=models.CASCADE, null=True, blank=True)
+    standard = models.ForeignKey(Standard, on_delete=models.CASCADE, null=True, blank=True)
     is_verified = models.BooleanField(default=True)
 
 class Series(models.Model):
