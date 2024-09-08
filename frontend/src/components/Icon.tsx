@@ -17,7 +17,7 @@ export default function Icon({ className, size = 30 }: IconProps) {
     <header className="sticky top-0 z-50 flex items-center">
       <div className="">
         <div className="flex items-center gap-2">
-          <Image src={`/icon.png`} alt={"icon"} width="35" height="35" />
+          <Image src={`/icon.png`} alt={"icon"} width="35" height="35" className="rounded-full"/>
           <div className="flex">
             <h1 className="text-lg md:text-3xl" >
               EduVerse

@@ -166,7 +166,7 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
         <div ref={bottomRef} />
       </ScrollArea>
 
-      <div className="sticky bottom-0 w-full bg-white">
+      <div className="sticky bottom-0 w-full">
         {/* Pass handleNewComment as a prop to CommentInput */}
         <CommentInput postId={uuid} onNewComment={handleNewComment} />
       </div>

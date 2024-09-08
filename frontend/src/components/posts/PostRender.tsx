@@ -95,12 +95,12 @@ const Post: React.FC<PostProps> = ({ post }) => {
       )}
       <hr />
       <div className="flex gap-2 items-center">
-        <div className="flex gap-0.5 w-fit items-center bg-gray-500/5 p-1 rounded-full">
+        <div className="flex gap-0.5 w-fit items-center bg-primary/10 p-1 rounded-full">
           <button
             className={`rounded-full p-1.5 ${
               isUpvoted
                 ? "bg-green-500 hover:bg-green-600  text-white"
-                : "bg-gray-200 hover:bg-gray-300"
+                : "hover:bg-primary/10 transition-colors duration-200"
             }`}
             onClick={handleUpvoteClick} // Upvote button click
           >
@@ -111,7 +111,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
             className={`rounded-full p-1.5 ${
               isDownvoted
                 ? "bg-red-500 hover:bg-red-600  text-white"
-                : "bg-gray-200 hover:bg-gray-300"
+                : "hover:bg-primary/10 transition-colors duration-200"
             }`}
             onClick={handleDownvoteClick} // Downvote button click
           >
@@ -119,7 +119,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           </button>
         </div>
         <button
-          className={`rounded-full p-2 bg-secondary text-primary }`}
+          className={`rounded-full p-2.5 bg-primary/10 text-primary }`}
         >
           <MessageSquare size={20} />
         </button>

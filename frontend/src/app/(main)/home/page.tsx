@@ -31,14 +31,16 @@ const Page = () => {
 
   return (
     <div className="">
-      <div className="flex w-full gap-4">
+      <div className="flex w-full gap-4 items-center">
         <div className="w-full ">
-          <span className="text-center">Ready to learn something new?</span>
+          <span className="text-center font-bold text-lg">
+            Ready to learn something new?
+          </span>
           <PostList />
         </div>
+
         <div className="w-fit sticky top-9 self-start">
-          {" "}
-          <span className="text-center block mb-2">
+          <span className="text-center block mb-2 font-bold">
             Or continue learning from where you left,
           </span>
           <Current />
