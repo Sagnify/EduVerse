@@ -613,11 +613,155 @@ class StandardViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
 
-# # LibAsset ViewSet
-# class LibAssetViewSet(viewsets.ModelViewSet):
-#     queryset = LibAsset.objects.all()
-#     serializer_class = LibAssetSerializer
+# LibAsset ViewSet
+class LibAssetViewSet(viewsets.ModelViewSet):
+    queryset = LibAsset.objects.all()
+    serializer_class = LibAssetSerializer
+    authentication_classes = [QueryParamTokenAuthentication]
+    permission_classes = [IsOwnerOrReadOnly]
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+        uuid = kwargs.get('pk')
+        try:
+            asset = LibAsset.objects.get(uuid=uuid)
+        except LibAsset.DoesNotExist:
+            raise NotFound('Asset not found.')
+
+        serializer = self.get_serializer(asset)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        uuid = kwargs.get('pk')
+        try:
+            asset = LibAsset.objects.get(uuid=uuid)
+        except LibAsset.DoesNotExist:
+            raise NotFound('Asset not found.')
+
+        serializer = self.get_serializer(asset, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        uuid = kwargs.get('pk')
+        try:
+            asset = LibAsset.objects.get(uuid=uuid)
+        except LibAsset.DoesNotExist:
+            raise NotFound('Asset not found.')
+
+        serializer = self.get_serializer(asset, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        uuid = kwargs.get('pk')
+        try:
+            asset = LibAsset.objects.get(uuid=uuid)
+        except LibAsset.DoesNotExist:
+            raise NotFound('Asset not found.')
+
+        self.perform_destroy(asset)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+class FollowViewSet(viewsets.ModelViewSet):
+    serializer_class = FollowSerializer
+    permission_classes = [IsOwnerOrReadOnly]
+    authentication_classes = [QueryParamTokenAuthentication]
+
+    def get_queryset(self):
+        # Ensure users only interact with follows relevant to them
+        return Follow.objects.filter(follower=self.request.user)
+
+    def perform_create(self, serializer):
+        follower = self.request.user
+        user = serializer.validated_data['user']
+
+        # Prevent users from following themselves
+        if follower == user:
+            raise serializers.ValidationError("You cannot follow yourself.")
+        
+        # Check if the user is already following the target user
+        if Follow.objects.filter(follower=follower, user=user).exists():
+            raise serializers.ValidationError("You are already following this user.")
+        
+        serializer.save(follower=follower)
+
+    def create(self, request, *args, **kwargs):
+        # Extract the token from the query parameters
+        token_key = request.query_params.get('token')
+        if not token_key:
+            return Response({"detail": "Token is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            return Response({"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Handle the follow/unfollow logic
+        user_id = request.data.get('user')
+        target_user = User.objects.filter(pk=user_id).first()  # Safe lookup
+
+        if not target_user:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if user == target_user:
+            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the follow relationship already exists
+        follow, created = Follow.objects.get_or_create(follower=user, user=target_user)
+        
+        if not created:
+            # If the follow relationship already exists, delete it (unfollow)
+            follow.delete()
+            return Response({"detail": "Unfollowed the user."}, status=status.HTTP_204_NO_CONTENT)
+
+        # If the follow relationship did not exist, create it
+        return Response({"detail": "Followed the user."}, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        try:
+            follow = self.get_queryset().get(pk=pk)
+        except Follow.DoesNotExist:
+            raise NotFound('Follow record not found.')
+
+        serializer = self.get_serializer(follow)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        try:
+            follow = self.get_queryset().get(pk=pk)
+        except Follow.DoesNotExist:
+            raise NotFound('Follow record not found.')
+
+        follow.delete()
+        return Response({"detail": "Successfully unfollowed the user."}, status=status.HTTP_204_NO_CONTENT)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def list_followers(self, request, *args, **kwargs):
+        followers = Follow.objects.filter(user=request.user)
+        serializer = self.get_serializer(followers, many=True)
+        return Response(serializer.data)
+
+    def list_following(self, request, *args, **kwargs):
+        following = Follow.objects.filter(follower=request.user)
+        serializer = self.get_serializer(following, many=True)
+        return Response(serializer.data)
 
 # # SaveLater ViewSet
 # class SaveLaterViewSet(viewsets.ModelViewSet):
@@ -628,11 +772,6 @@ class StandardViewSet(viewsets.ModelViewSet):
 # class ReportViewSet(viewsets.ModelViewSet):
 #     queryset = Report.objects.all()
 #     serializer_class = ReportSerializer
-
-# # Dive ViewSet
-# class DiveViewSet(viewsets.ModelViewSet):
-#     queryset = Follow.objects.all()
-#     serializer_class = DiveSerializer
 
 # # Notification ViewSet
 # class NotificationViewSet(viewsets.ModelViewSet):

@@ -108,6 +108,7 @@ class Comment(models.Model):
 
 class LibAsset(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     visibility = models.BooleanField(default=True)
     asset_url = models.URLField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -115,7 +116,7 @@ class LibAsset(models.Model):
     description = models.TextField()
     stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
     standard = models.ForeignKey(Standard, on_delete=models.CASCADE)
-    is_verified = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=True)
 
 class Series(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -142,7 +143,7 @@ class Lecture(models.Model):
     asset_sel = models.ForeignKey(LibAsset, on_delete=models.CASCADE, blank=True, null=True)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
     visibility = models.BooleanField(default=True)
-    is_verified = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=True)
     series = models.ForeignKey(Series, on_delete=models.CASCADE, related_name='lectures')
 
     def __str__(self):

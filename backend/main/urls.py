@@ -31,8 +31,9 @@ urlpatterns = [
     path('series/', views.SeriesViewSet.as_view({'get': 'list', 'post': 'create'}), name='series-list-create'),
     path('series/<int:pk>/', views.SeriesViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='series-detail'),
 
-    # path('libassets/', LibAssetListCreateView.as_view(), name='libasset-list-create'),
-    # path('libassets/<int:pk>/', LibAssetDetailView.as_view(), name='libasset-detail'),
+
+    path('libassets/', views.LibAssetViewSet.as_view({'get': 'list', 'post': 'create'}), name='libasset-list-create'),
+    path('libassets/<uuid:pk>/', views.LibAssetViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='libasset-detail'),
 
     path('lectures/', views.LectureViewSet.as_view({'get': 'list', 'post': 'create'}), name='lecture-list-create'),
     path('lectures/<int:pk>/', views.LectureViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='lecture-detail'),
@@ -48,14 +49,16 @@ urlpatterns = [
     path('standards/', views.StandardViewSet.as_view({'get': 'list', 'post': 'create'}), name='standard-list'),
     path('standards/<int:pk>/', views.StandardViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='standard-detail'),
 
+    path('dives/', views.FollowViewSet.as_view({'get': 'list', 'post': 'create'}), name='dive-list-create'),
+    path('dives/<int:pk>/', views.FollowViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='dive-detail'),
+
     # path('savelater/', SaveLaterListCreateView.as_view(), name='savelater-list-create'),
     # path('savelater/<int:pk>/', SaveLaterDetailView.as_view(), name='savelater-detail'),
 
     # path('reports/', ReportListCreateView.as_view(), name='report-list-create'),
     # path('reports/<int:pk>/', ReportDetailView.as_view(), name='report-detail'),
 
-    # path('dives/', DiveListCreateView.as_view(), name='dive-list-create'),
-    # path('dives/<int:pk>/', DiveDetailView.as_view(), name='dive-detail'),
+
 
     # path('notifications/', NotificationListCreateView.as_view(), name='notification-list-create'),
     # path('notifications/<int:pk>/', NotificationDetailView.as_view(), name='notification-detail'),

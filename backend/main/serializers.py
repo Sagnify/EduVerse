@@ -70,10 +70,12 @@ class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     student_profile = UserProfileStudentSerializer(required=False, allow_null=True)
     teacher_profile = UserProfileTeacherSerializer(required=False, allow_null=True)
+    follower_count = serializers.SerializerMethodField()
+
     
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'password', 'profile', 'student_profile', 'teacher_profile']
+        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'password', 'profile', 'student_profile', 'teacher_profile', 'follower_count']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -134,6 +136,9 @@ class UserSerializer(serializers.ModelSerializer):
             representation.pop('student_profile', None)
             representation.pop('teacher_profile', None)
         return representation
+    
+    def get_follower_count(self, obj):
+        return Follow.objects.filter(user=obj).count()
     
 
 
@@ -294,11 +299,41 @@ class StandardSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']  # Add 'subject' and 'stream' fields if relationships are included
 
 
-# class LibAssetSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = LibAsset
-#         fields = '__all__'
+class LibAssetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LibAsset
+        fields = ['id','uuid', 'user', 'visibility', 'asset_url', 'created_at', 'title', 'description', 'stream', 'standard', 'is_verified']
+        read_only_fields = ['id', 'created_at', 'user', 'uuid', 'is_verified']
 
+
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = ['id', 'user', 'follower', 'created_at']
+        read_only_fields = ['created_at', 'follower']
+
+    def validate(self, data):
+        """
+        Check that the follower is not the same as the user being followed.
+        """
+        if data['follower'] == data['user']:
+            raise serializers.ValidationError("You cannot follow yourself.")
+        return data
+
+    def create(self, validated_data):
+        # The follower is set based on the user making the request in the viewset.
+        follower = self.context['request'].user
+        user = validated_data['user']
+        
+        if follower == user:
+            raise serializers.ValidationError("You cannot follow yourself.")
+        
+        return Follow.objects.create(follower=follower, **validated_data)
+
+# class NotificationSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Notification
+#         fields = '__all__'
 
 # class SaveLaterSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -308,14 +343,4 @@ class StandardSerializer(serializers.ModelSerializer):
 # class ReportSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Report
-#         fields = '__all__'
-
-# class DiveSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Follow
-#         fields = '__all__'
-
-# class NotificationSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Notification
 #         fields = '__all__'
