@@ -32,6 +32,7 @@ interface PostProps {
     post_img_url?: string;
     has_upvoted: boolean;
     has_downvoted: boolean;
+    comment_count: number;
   };
 }
 

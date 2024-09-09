@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import useUserFetcher from "@/core/fetchUser";
 import { Pencil } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 const Layout = ({
@@ -15,15 +16,16 @@ const Layout = ({
     <main className="">
       {children}
       {!user?.profile.is_teacher && (
-        <Button
-          variant={"outline"}
-          size={"lg"}
-          className="fixed bottom-20 right-20 flex gap-2 items-center px-2"
-          onClick={() => alert("Button Clicked!")}
-        >
-          <Pencil size={20} />
-          Add to Library
-        </Button>
+        <Link href="/library/new">
+          <Button
+            variant={"outline"}
+            size={"lg"}
+            className="fixed bottom-20 right-20 flex gap-2 items-center px-2"
+          >
+            <Pencil size={20} />
+            Add to Library
+          </Button>
+        </Link>
       )}
     </main>
   );

@@ -34,7 +34,7 @@ const LibraryList: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 w-full gap-2">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {libraries.map((library) => (
         <Library key={library.uuid} library={library} />
       ))}
