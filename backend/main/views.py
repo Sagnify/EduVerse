@@ -109,7 +109,7 @@ class UserDetailView(RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
     authentication_classes = [QueryParamTokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     lookup_field = 'pk'
 
     def get_object(self):
