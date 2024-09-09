@@ -637,7 +637,30 @@ class LibAssetViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
 
     def perform_create(self, serializer):
+        # Get the title and description from the serializer data
+        title = serializer.validated_data.get('title', '')
+        description = serializer.validated_data.get('description', '')
+
+        # Moderate the title and description using the Gemini API
+        try:
+            title_passes_moderation = moderate_post_with_gemini(title)
+            description_passes_moderation = moderate_post_with_gemini(description)
+        except Exception as e:
+            raise ValidationError({
+                'detail': f'Error during moderation: {str(e)}'
+            })
+
+        # Check if any of the moderation attempts failed
+        if not (title_passes_moderation and description_passes_moderation):
+            raise ValidationError({
+                'title': 'Title could not be moderated.' if not title_passes_moderation else None,
+                'description': 'Description could not be moderated.' if not description_passes_moderation else None,
+                'detail': 'Non-Educational Content Detected.'
+            })
+
+        # Save the serializer if moderation passes
         serializer.save(user=self.request.user)
+
 
     def retrieve(self, request, *args, **kwargs):
         uuid = kwargs.get('pk')
