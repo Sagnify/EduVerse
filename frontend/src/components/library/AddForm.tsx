@@ -9,16 +9,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Alert } from "../ui/alert";
 import { addLibrary } from "@/core/addLibrary";
+import { Textarea } from "../ui/textarea";
 
 // Define the schema for the form using Zod
 const formSchema = z.object({
   visibility: z.boolean().default(true),
-  asset_url: z.string().url("Invalid URL").optional(),
+  asset_url: z.string().url("Invalid URL").endsWith(".pdf", "URL must end with .pdf"),
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  stream: z.string().optional(),
-  subject: z.string().optional(),
-  standard: z.string().optional(),
+  stream: z.string().min(1, "Stream is required"),
+  subject: z.string().min(1, "Subject is required"),
+  standard: z.string().min(1, "Standard is required"),
 });
 
 type FormInputs = z.infer<typeof formSchema>;
@@ -72,38 +73,25 @@ export default function MyForm() {
   };
 
   return (
-    <div className="flex items-center justify-center text-center">
-      <Card className="p-5 w-96 shadow-xl border-0">
+    <div className="flex items-center w-full px-14">
+      <Card className="p-5 shadow-xl border-0 w-full">
         <CardHeader>
           <CardHeader className="text-3xl font-bold m-0 p-0">
-            Submit Form
+            Add in library
           </CardHeader>
           <CardDescription className="font-bold">
-            Fill in the details below.
+            Share with us a link of your PDF so that we can add it to our
+            library
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-4">
+          <div className="mb-4 ">
             {/* Visibility field is not shown in the form, but is always true */}
             <Input
               type="hidden"
               id="visibility"
               value="true"
               {...register("visibility")}
-            />
-          </div>
-
-          <div className="mb-4">
-            {errors.asset_url && (
-              <p className="text-red-400 mb-2 text-xs font-bold">
-                {errors.asset_url.message}
-              </p>
-            )}
-            <Input
-              id="asset_url"
-              {...register("asset_url")}
-              placeholder="Asset URL"
-              className="form-control bg-white/10 backdrop-blur-xl"
             />
           </div>
 
@@ -122,29 +110,6 @@ export default function MyForm() {
           </div>
 
           <div className="mb-4">
-            {errors.description && (
-              <p className="text-red-400 mb-2 text-xs font-bold">
-                {errors.description.message}
-              </p>
-            )}
-            <Input
-              id="description"
-              {...register("description")}
-              placeholder="Description"
-              className="form-control bg-white/10 backdrop-blur-xl"
-            />
-          </div>
-
-          <div className="mb-4">
-            <Input
-              id="stream"
-              {...register("stream")}
-              placeholder="Stream"
-              className="form-control bg-white/10 backdrop-blur-xl"
-            />
-          </div>
-
-          <div className="mb-4">
             <Input
               id="subject"
               {...register("subject")}
@@ -154,12 +119,51 @@ export default function MyForm() {
           </div>
 
           <div className="mb-4">
+            {errors.asset_url && (
+              <p className="text-red-400 mb-2 text-xs font-bold">
+                {errors.asset_url.message}
+              </p>
+            )}
             <Input
-              id="standard"
-              {...register("standard")}
-              placeholder="Standard"
+              id="asset_url"
+              {...register("asset_url")}
+              placeholder="PDF URL"
               className="form-control bg-white/10 backdrop-blur-xl"
             />
+          </div>
+
+          <div className="mb-4">
+            {errors.description && (
+              <p className="text-red-400 mb-2 text-xs font-bold">
+                {errors.description.message}
+              </p>
+            )}
+            <Textarea
+              id="description"
+              {...register("description")}
+              placeholder="Description"
+              className="form-control bg-white/10 backdrop-blur-xl"
+            />
+          </div>
+
+          <div className=" flex gap-4 justify-center">
+            <div className="mb-4 w-full">
+              <Input
+                id="stream"
+                {...register("stream")}
+                placeholder="Stream"
+                className="form-control bg-white/10 backdrop-blur-xl"
+              />
+            </div>
+
+            <div className="mb-4 w-full">
+              <Input
+                id="standard"
+                {...register("standard")}
+                placeholder="Standard"
+                className="form-control bg-white/10 backdrop-blur-xl"
+              />
+            </div>
           </div>
 
           <Button
