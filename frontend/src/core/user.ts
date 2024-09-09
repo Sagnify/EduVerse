@@ -17,7 +17,7 @@ export function fetchUserDataFromToken(token: string): Promise<User> {
     });
 }
 
-export function fetchUserDataFromUsername(username: string): Promise<User> {
+export function fetchUserDataByUsername(username: string): Promise<User> {
   const url = `https://eduverse-a4l5.onrender.com/api/users/?username=${username}`;
 
   return fetch(url)
@@ -27,8 +27,12 @@ export function fetchUserDataFromUsername(username: string): Promise<User> {
       }
       return response.json();
     })
-    .then((data: User) => {
-      return data;
+    .then((data: User[]) => {
+      if (data.length > 0) {
+        return data[0]; // Assuming the array contains only one user
+      } else {
+        throw new Error("User not found");
+      }
     })
     .catch((error) => {
       console.error("Error fetching user data:", error);

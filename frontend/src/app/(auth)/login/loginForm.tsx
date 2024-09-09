@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { loginUser } from "./actions/login";
 import { useForm } from "react-hook-form";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation"; // Import useRouter
 import Link from "next/link";
+import useUserFetcher from "@/core/fetchUser";
 
 // Define the schema for the form using Zod
 const loginSchema = z.object({
@@ -20,10 +21,17 @@ const loginSchema = z.object({
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
 export default function Login() {
+  const { user, loading, error } = useUserFetcher();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!(!loading && (!user || error))) {
+      router.push("/home");
+    }
+  }, [loading, user, error, router]);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter(); // Initialize useRouter
 
   const {
     register,

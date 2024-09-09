@@ -42,3 +42,19 @@ interface Comment {
   created_at: string;
   comment_caption: string;
 }
+
+interface LibraryProps {
+  library: {
+    id: number;
+    uuid: string;
+    user: User;
+    visibility: false;
+    asset_url: string;
+    created_at: string;
+    title: string;
+    description: string;
+    stream: number;
+    standard: number;
+    is_verified: false;
+  };
+}
