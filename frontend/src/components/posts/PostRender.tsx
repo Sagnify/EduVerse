@@ -119,8 +119,9 @@ const Post: React.FC<PostProps> = ({ post }) => {
           </button>
         </div>
         <button
-          className={`rounded-full p-2.5 bg-primary/10 text-primary }`}
+          className={`rounded-full p-2 px-2.5 bg-primary/10 text-primary flex items-center gap-2 }`}
         >
+          {post.comment_count}
           <MessageSquare size={20} />
         </button>
       </div>

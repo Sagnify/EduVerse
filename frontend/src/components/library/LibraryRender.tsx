@@ -1,52 +1,12 @@
 "use client";
-import React, { useState } from "react";
-import Image from "next/image";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { formatReletiveDate } from "@/lib/utils";
-import { ChevronsDown, ChevronsUp, CircleCheckBig, MessageSquare } from "lucide-react";
-import useUpvote from "@/core/useUpvote";
-import useDownvote from "@/core/useDownvote";
+import {CircleCheckBig} from "lucide-react";
 import { Card } from "../ui/card";
 
 const Library: React.FC<LibraryProps> = ({ library }) => {
-  // const [totalVote, setTotalVote] = useState(library.total_vote);
-  // const [isUpvoted, setIsUpvoted] = useState(library.has_upvoted);
-  // const [isDownvoted, setIsDownvoted] = useState(library.has_downvoted);
   const router = useRouter();
-
-  // const { handleUpvote } = useUpvote(
-  //   library.uuid,
-  //   totalVote,
-  //   isUpvoted,
-  //   setTotalVote
-  // );
-
-  // const { handleDownvote } = useDownvote(
-  //   library.uuid,
-  //   totalVote,
-  //   isDownvoted,
-  //   setTotalVote
-  // );
-
-  // const handleUpvoteClick = (e: React.MouseEvent) => {
-  //   e.stopPropagation(); // Prevent click event from propagating to the library container
-  //   if (isDownvoted) {
-  //     setIsDownvoted(false); // Reset downvote if the library was previously downvoted
-  //     setTotalVote((prev) => prev + 1); // Increment vote by 1 to nullify the previous downvote
-  //   }
-  //   handleUpvote();
-  //   setIsUpvoted(!isUpvoted); // Toggle the upvote state
-  // };
-
-  // const handleDownvoteClick = (e: React.MouseEvent) => {
-  //   e.stopPropagation(); // Prevent click event from propagating to the library container
-  //   if (isUpvoted) {
-  //     setIsUpvoted(false); // Reset upvote if the library was previously upvoted
-  //     setTotalVote((prev) => prev - 1); // Decrement vote by 1 to nullify the previous upvote
-  //   }
-  //   handleDownvote();
-  //   setIsDownvoted(!isDownvoted); // Toggle the downvote state
-  // };
 
   const handlePostClick = () => {
     router.push(`/library/${library.uuid}`); // Navigate to the library page
@@ -56,7 +16,7 @@ const Library: React.FC<LibraryProps> = ({ library }) => {
     <Card
       key={library.uuid}
       onClick={handlePostClick} // Handle click on the library
-      className="group/library space-y-3 rounded-2xl mt-5 bg-card p-5 shadow-[0_3px_15px_rgb(0,0,0,0.12)] cursor-pointer" // Added cursor-pointer for better UX
+      className="group/library rounded-2xl bg-card p-5 shadow-[0_3px_15px_rgb(0,0,0,0.12)] cursor-pointer" // Added cursor-pointer for better UX
     >
       <div className="flex gap-3 items-center m-0 p-0">
         <p className="flex items-center gap-1 font-medium">
