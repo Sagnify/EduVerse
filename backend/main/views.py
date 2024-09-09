@@ -19,11 +19,11 @@ from rest_framework.exceptions import NotFound
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-# from .jwt import create_jwt_for_user, decode_refresh_token
-from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework.views import APIView
 from .aimod import *
+from django.core.exceptions import ObjectDoesNotExist
+
+
 
 
 class CustomObtainAuthToken(APIView):
@@ -645,7 +645,6 @@ class LibAssetViewSet(viewsets.ModelViewSet):
             asset = LibAsset.objects.get(uuid=uuid)
         except LibAsset.DoesNotExist:
             raise NotFound('Asset not found.')
-
         serializer = self.get_serializer(asset)
         return Response(serializer.data)
 
@@ -655,11 +654,9 @@ class LibAssetViewSet(viewsets.ModelViewSet):
             asset = LibAsset.objects.get(uuid=uuid)
         except LibAsset.DoesNotExist:
             raise NotFound('Asset not found.')
-
         serializer = self.get_serializer(asset, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-
         return Response(serializer.data)
 
     def partial_update(self, request, *args, **kwargs):
@@ -668,11 +665,9 @@ class LibAssetViewSet(viewsets.ModelViewSet):
             asset = LibAsset.objects.get(uuid=uuid)
         except LibAsset.DoesNotExist:
             raise NotFound('Asset not found.')
-
         serializer = self.get_serializer(asset, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
@@ -681,50 +676,37 @@ class LibAssetViewSet(viewsets.ModelViewSet):
             asset = LibAsset.objects.get(uuid=uuid)
         except LibAsset.DoesNotExist:
             raise NotFound('Asset not found.')
-
         self.perform_destroy(asset)
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
     def list(self, request, *args, **kwargs):
         # Extract token from query parameters
         token_key = request.query_params.get('token', None)
-        print(f"Token received: {token_key}")
-
         if token_key:
             try:
                 # Retrieve the token and associated user
                 token = Token.objects.get(key=token_key)
                 user = token.user
-                print(f"User retrieved: {user.username}")
             except Token.DoesNotExist:
                 return Response({"detail": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
-
-            # Access the user's standard from their profile
-            user_standard = getattr(user.student_profile, 'standard', None)
-            print(f"User's standard: {user_standard}")
-
-            if user_standard:
-                # Filter queryset based on the user's standard field
-                queryset = self.queryset.filter(standard=user_standard)
-                print(f"Filtered queryset count: {queryset.count()}")
-
-                if not queryset.exists():
-                    # If no rows match, return all rows
-                    print("No matching assets found. Returning all rows.")
-                    queryset = self.queryset
-            else:
-                # If the user doesn't have a standard, return all rows
-                print("User does not have a standard. Returning all rows.")
-                queryset = self.queryset
+            
+            # Get the user's own assets and the assets matching their standard
+            user_assets = self.queryset.filter(user=user)
+            try:
+                user_standard = user.student_profile.standard
+                standard_assets = self.queryset.filter(standard=user_standard)
+                # Combine the user's own assets and the assets matching their standard
+                queryset = (user_assets | standard_assets).distinct()
+            except ObjectDoesNotExist:
+                # If the user does not have a student_profile, return their own assets
+                queryset = user_assets
         else:
-            # If no token is provided, return all rows
-            print("No token provided. Returning all rows.")
+            # If no token is provided, return all assets
             queryset = self.queryset
 
         # Serialize and return the data
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
 
 
 
