@@ -695,8 +695,12 @@ class LibAssetViewSet(viewsets.ModelViewSet):
             try:
                 user_standard = user.student_profile.standard
                 standard_assets = self.queryset.filter(standard=user_standard)
-                # Combine the user's own assets and the assets matching their standard
-                queryset = (user_assets | standard_assets).distinct()
+                if standard_assets.exists():
+                    # If assets are found for the user's standard, return them
+                    queryset = standard_assets
+                else:
+                    # If no assets are found for the user's standard, return all assets
+                    queryset = self.queryset
             except ObjectDoesNotExist:
                 # If the user does not have a student_profile, return their own assets
                 queryset = user_assets
