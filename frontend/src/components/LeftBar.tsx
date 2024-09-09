@@ -40,7 +40,7 @@ export default function Leftbar() {
       </div>
 
       {/* Mobile Navigation (Bottom bar) */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white shadow-md flex justify-around p-2">
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-background shadow-md flex justify-around p-2">
         <Link href={`/home`}>
           <Button variant="ghost" className="flex flex-col items-center">
             <House />
