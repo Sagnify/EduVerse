@@ -192,10 +192,11 @@ class PostListSerializer(serializers.ModelSerializer):
     total_vote = serializers.SerializerMethodField()
     has_upvoted = serializers.SerializerMethodField()
     has_downvoted = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'created_at', 'user', 'caption', 'post_img_url', 'uuid', 'upvote_count', 'downvote_count', 'total_vote', 'has_upvoted', 'has_downvoted']
+        fields = ['id', 'created_at', 'user', 'caption', 'post_img_url', 'uuid', 'upvote_count', 'downvote_count', 'total_vote', 'has_upvoted', 'has_downvoted', 'comment_count']
 
     def get_upvote_count(self, obj):
         return Upvote.objects.filter(post=obj).count()
@@ -215,6 +216,9 @@ class PostListSerializer(serializers.ModelSerializer):
     def get_has_downvoted(self, obj):
         user = self.context.get('request').user
         return Downvote.objects.filter(post=obj, user=user).exists()
+    
+    def get_comment_count(self, obj):
+        return Comment.objects.filter(post=obj).count()
 
 
 
