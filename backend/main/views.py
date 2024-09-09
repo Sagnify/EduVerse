@@ -6,7 +6,7 @@ from .serializers import *
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from rest_framework import generics
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
 from .authentication import QueryParamTokenAuthentication
 from .permission import IsOwnerOrReadOnly
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -52,73 +52,89 @@ class CustomObtainAuthToken(APIView):
     
         
 
-class UserApiView(ListCreateAPIView):
+class UserListCreateView(ListCreateAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    authentication_classes = [QueryParamTokenAuthentication]  # Use DRF's TokenAuthentication
-    permission_classes = [AllowAny]  # AllowAny can be replaced with IsAuthenticated if needed
+    authentication_classes = [QueryParamTokenAuthentication]
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        """
+        This method filters the queryset based on query parameters.
+        """
+        queryset = User.objects.all()
+        user_id = self.request.query_params.get('user_id')
+        username = self.request.query_params.get('username')
+
+        if user_id:
+            queryset = queryset.filter(id=user_id)
+        elif username:
+            queryset = queryset.filter(username=username)
+
+        return queryset
 
     def list(self, request, *args, **kwargs):
+        """
+        List users or return specific user data based on query parameters.
+        """
         show_my = request.query_params.get('show_my') == 'true'
         if show_my:
             if not request.user.is_authenticated:
                 raise NotAuthenticated(detail='Authentication is required to access your details.')
-
-            user = request.user
-            try:
-                user_data = self.get_serializer(user).data
-                return Response(user_data)
-            except Exception as e:
-                logger.error(f"Error serializing user {user.id}: {str(e)}")
-                return Response({"error": "Error retrieving user data"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        user_id = request.query_params.get('user_id')
-        username = request.query_params.get('username')
-
-        if user_id:
-            user = get_object_or_404(User, id=user_id)
-        elif username:
-            user = get_object_or_404(User, username=username)
-        else:
-            queryset = self.get_queryset()
-            data = []
-            for user in queryset:
-                try:
-                    user_data = self.get_serializer(user).data
-                    data.append(user_data)
-                except Exception as e:
-                    logger.error(f"Error serializing user {user.id}: {str(e)}")
-            return Response(data)
-
-        try:
-            user_data = self.get_serializer(user).data
+            user_data = self.get_serializer(request.user).data
             return Response(user_data)
-        except Exception as e:
-            logger.error(f"Error serializing user {user.id}: {str(e)}")
-            return Response({"error": "Error retrieving user data"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
+        """
+        Handles creating a new user and auto-generating a token.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
 
-            # Automatically create a token for the new user
-            user = serializer.instance
-            token, created = Token.objects.get_or_create(user=user)
+        user = serializer.instance
+        token, created = Token.objects.get_or_create(user=user)
 
-            # Include the token in the response data
-            response_data = serializer.data
-            response_data['token'] = token.key
+        response_data = serializer.data
+        response_data['token'] = token.key
 
-            return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
-        except serializers.ValidationError as e:
-            logger.error(f"Validation error: {str(e)}")
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            logger.error(f"Error creating user: {str(e)}")
-            return Response({"error": "Error creating user"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+
+class UserDetailView(RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    authentication_classes = [QueryParamTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'pk'
+
+    def get_object(self):
+        """
+        Retrieve the user object based on URL parameters.
+        """
+        lookup_value = self.kwargs.get(self.lookup_field)
+        filter_kwargs = {self.lookup_field: lookup_value}
+
+        if self.lookup_field == 'username':
+            filter_kwargs = {'username': lookup_value}
+
+        obj = get_object_or_404(User, **filter_kwargs)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+
 
 
 

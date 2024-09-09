@@ -110,6 +110,46 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Error creating profile: {str(e)}")
 
         return user
+    
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', None)
+        student_data = validated_data.pop('student_profile', None)
+        teacher_data = validated_data.pop('teacher_profile', None)
+
+        # Update the main user fields
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.set_password(validated_data.get('password', instance.password))
+        instance.save()
+
+        # Update the nested profiles
+        if profile_data:
+            UserProfile.objects.update_or_create(
+                user=instance,
+                defaults=profile_data
+            )
+
+        if student_data:
+            try:
+                student_profile = instance.student_profile
+                for key, value in student_data.items():
+                    setattr(student_profile, key, value)
+                student_profile.save()
+            except UserProfileStudent.DoesNotExist:
+                UserProfileStudent.objects.create(user=instance, **student_data)
+
+        if teacher_data:
+            try:
+                teacher_profile = instance.teacher_profile
+                for key, value in teacher_data.items():
+                    setattr(teacher_profile, key, value)
+                teacher_profile.save()
+            except UserProfileTeacher.DoesNotExist:
+                UserProfileTeacher.objects.create(user=instance, **teacher_data)
+
+        return instance
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

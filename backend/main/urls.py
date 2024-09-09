@@ -6,7 +6,10 @@ urlpatterns = [
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('users/', views.UserApiView.as_view()),
+    path('users/', views.UserListCreateView.as_view(), name='user-list-create'),
+    path('users/<int:pk>/', views.UserDetailView.as_view(), name='user-detail-by-id'),
+    path('users/<str:username>/', views.UserDetailView.as_view(), name='user-detail-by-username'),
+
     path('token-auth', views.CustomObtainAuthToken.as_view(), name='token_auth'),
     # path('token-auth/refresh/', views.RefreshTokenView.as_view(), name='token_refresh'),
 
