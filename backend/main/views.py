@@ -661,7 +661,6 @@ class LibAssetViewSet(viewsets.ModelViewSet):
         # Save the serializer if moderation passes
         serializer.save(user=self.request.user)
 
-
     def retrieve(self, request, *args, **kwargs):
         uuid = kwargs.get('pk')
         try:
@@ -705,6 +704,8 @@ class LibAssetViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         # Extract token from query parameters
         token_key = request.query_params.get('token', None)
+        show_all = request.query_params.get('all', False)
+
         if token_key:
             try:
                 # Retrieve the token and associated user
@@ -713,20 +714,25 @@ class LibAssetViewSet(viewsets.ModelViewSet):
             except Token.DoesNotExist:
                 return Response({"detail": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            # Get the user's own assets and the assets matching their standard
-            user_assets = self.queryset.filter(user=user)
-            try:
-                user_standard = user.student_profile.standard
-                standard_assets = self.queryset.filter(standard=user_standard)
-                if standard_assets.exists():
-                    # If assets are found for the user's standard, return them
-                    queryset = standard_assets
-                else:
-                    # If no assets are found for the user's standard, return all assets
-                    queryset = self.queryset
-            except ObjectDoesNotExist:
-                # If the user does not have a student_profile, return their own assets
-                queryset = user_assets
+            # If the 'all' query parameter is True, return all assets
+            if show_all:
+                queryset = self.queryset
+            else:
+                # Get the user's own assets and the assets matching their standard
+                user_assets = self.queryset.filter(user=user)
+                try:
+                    user_standard = user.student_profile.standard
+                    print(user_standard)
+                    standard_assets = self.queryset.filter(standard=user_standard)
+                    if standard_assets.exists():
+                        # If assets are found for the user's standard, return them
+                        queryset = standard_assets
+                    else:
+                        # If no assets are found for the user's standard, return all assets
+                        queryset = self.queryset
+                except ObjectDoesNotExist:
+                    # If the user does not have a student_profile, return their own assets
+                    queryset = user_assets
         else:
             # If no token is provided, return all assets
             queryset = self.queryset
@@ -734,7 +740,6 @@ class LibAssetViewSet(viewsets.ModelViewSet):
         # Serialize and return the data
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
 
 
 
