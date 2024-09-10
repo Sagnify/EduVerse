@@ -473,6 +473,15 @@ class SeriesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
     queryset = Series.objects.all()
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        show_my = self.request.query_params.get('show_my', 'false').lower()
+
+        if show_my == 'true' and self.request.user.is_authenticated:
+            return queryset.filter(user=self.request.user)
+        
+        return queryset
+
     def create(self, request, *args, **kwargs):
         user = request.user
         if not user.is_authenticated:
@@ -489,6 +498,7 @@ class SeriesViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
 
 
 class LectureViewSet(viewsets.ModelViewSet):
