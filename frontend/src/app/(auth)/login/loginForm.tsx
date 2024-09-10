@@ -21,14 +21,15 @@ const loginSchema = z.object({
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
 export default function Login() {
-  const { user, loading, error } = useUserFetcher();
+  const token = localStorage.getItem("token");
   const router = useRouter();
 
   useEffect(() => {
-    if (!(!loading && (!user || error))) {
+    if (token) {
       router.push("/home");
     }
-  }, [loading, user, error, router]);
+  }, [token]);
+
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
