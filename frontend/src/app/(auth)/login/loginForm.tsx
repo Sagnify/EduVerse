@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { loginUser } from "./actions/login";
@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import useUserFetcher from "@/core/fetchUser";
 
 // Define the schema for the form using Zod
 const loginSchema = z.object({
@@ -21,14 +20,17 @@ const loginSchema = z.object({
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
 export default function Login() {
-  const token = localStorage.getItem("token");
   const router = useRouter();
 
   useEffect(() => {
-    if (token) {
-      router.push("/home");
+    // Check if we are in the browser before accessing localStorage
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) {
+        router.push("/home");
+      }
     }
-  }, [token]);
+  }, [router]);
 
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -50,9 +52,7 @@ export default function Login() {
 
     if (result.success) {
       setSuccessMessage(result.message);
-      // Redirect to /home/page.tsx
       router.push("/home");
-      console.log("Login successful!");
     } else {
       setErrorMessage(result.message);
     }
