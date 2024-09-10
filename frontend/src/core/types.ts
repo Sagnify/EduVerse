@@ -59,3 +59,31 @@ interface LibraryProps {
     is_verified: false;
   };
 }
+
+interface SeriesProps {
+  series: {
+    id: number;
+    title: string;
+    description: string;
+    created_at: string;
+    user: User;
+    lectures: Lecture;
+    lecture_count: number;
+  };
+}
+
+interface Lecture {
+    id: number;
+    lecture_url: string;
+    thumbnail_url: string;
+    title: string;
+    description: string;
+    stream: string;
+    subject: string;
+    standard: string;
+    asset_sel: string;
+    rating: number;
+    visibility: boolean;
+    is_verified: boolean;
+    series: number;
+  };

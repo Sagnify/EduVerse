@@ -11,9 +11,12 @@ export const metadata: Metadata = {
 };
 
 const page = () => {
-  return <div>
-    <LibraryList />
-  </div>;
+  return (
+    <div>
+      <div className="text-4xl font-bold mb-4">Library</div>
+      <LibraryList />
+    </div>
+  );
 };
 
 export default page;
