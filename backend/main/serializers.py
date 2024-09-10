@@ -304,10 +304,11 @@ class LectureSerializer(serializers.ModelSerializer):
 class SeriesSerializer(serializers.ModelSerializer):
     lecture_count = serializers.IntegerField(read_only=True)
     user = UserSerializer(read_only=True)
+    lectures = LectureSerializer(many=True, read_only=True)
 
     class Meta:
         model = Series
-        fields = ['id', 'title', 'description', 'created_at', 'user', 'lecture_count']
+        fields = ['id', 'title', 'description', 'created_at', 'user', 'lecture_count', 'lectures']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
