@@ -303,7 +303,7 @@ class LectureSerializer(serializers.ModelSerializer):
 
 class SeriesSerializer(serializers.ModelSerializer):
     lecture_count = serializers.IntegerField(read_only=True)
-    user = serializers.ReadOnlyField(source='user.username')  # Show username or other user info
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Series
