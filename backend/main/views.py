@@ -507,6 +507,20 @@ class LectureViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
     queryset = Lecture.objects.all()
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        series_id = self.request.query_params.get('series_id', None)
+        
+        if series_id is not None:
+            try:
+                series_id = int(series_id)
+                queryset = queryset.filter(series=series_id)
+            except ValueError:
+                queryset = queryset.none()  # Return empty queryset if `series_id` is not a valid integer
+
+        return queryset
+
+
     def create(self, request, *args, **kwargs):
         user = request.user
         if not user.is_authenticated:
