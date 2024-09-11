@@ -4,27 +4,11 @@ import { useRouter } from "next/navigation";
 import { formatReletiveDate } from "@/lib/utils";
 import { Card } from "../ui/card";
 
-interface SeriesProps {
-  series: {
-    id: number;
-    title: string;
-    description: string;
-    created_at: string;
-    user: {
-      username: string;
-      profile: {
-        is_student: boolean;
-      };
-    };
-    lecture_count: number;
-  };
-}
-
 const Series: React.FC<SeriesProps> = ({ series }) => {
   const router = useRouter();
 
   const handlePostClick = () => {
-    router.push(`/series/lectures/${series.id}`); // Navigate to the series page
+    router.push(`/series/${series.id}`); // Navigate to the series page
   };
 
   return (
@@ -36,6 +20,7 @@ const Series: React.FC<SeriesProps> = ({ series }) => {
       <div className="flex gap-3 items-center m-0 p-0">
         <p className="flex items-center gap-1 font-medium">
           {series.user.username}
+          {series.id}
           {series.user.profile.is_student ? (
             <span className="text-xs bg-green-500 text-white px-1 rounded-full">
               Student
