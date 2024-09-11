@@ -1,0 +1,100 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+
+      /* Navigation bar styling */
+      .navbar {
+        background-color: #333;
+        overflow: hidden;
+      }
+
+      .navbar a {
+        float: left;
+        display: block;
+        color: #f2f2f2;
+        text-align: center;
+        padding: 14px 20px;
+        text-decoration: none;
+      }
+
+      .navbar a:hover {
+        background-color: #ddd;
+        color: black;
+      }
+
+      .navbar a.active {
+        background-color: #007bff;
+        color: white;
+      }
+
+      /* Main dashboard container */
+      .dashboard {
+        padding: 20px;
+      }
+
+      h1 {
+        color: #333;
+        text-align: center;
+      }
+
+      /* Section cards styling */
+      .card {
+        background-color: white;
+        padding: 20px;
+        margin: 20px auto;
+        max-width: 800px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .card h2 {
+        margin-top: 0;
+        color: #007bff;
+      }
+    </style>
+  </head> -->
+{% extends "base.html" %} {% block content %}
+<body>
+  <!-- Navigation Bar -->
+  <div class="navbar">
+    <a href="#" class="active">Home</a>
+    <a href="#">Library Review</a>
+    <a href="#">Lecture Review</a>
+  </div>
+
+  <!-- Main Dashboard Content -->
+  <div class="dashboard">
+    <h1>Welcome to the Admin Dashboard</h1>
+
+    <!-- Home Section -->
+    <!-- Library Review Section -->
+    <div class="card">
+      <h2>Library Review</h2>
+      <p>
+        Here, you can manage and review all the library-related records and
+        content. Admin users can add, edit, and delete library information.
+      </p>
+    </div>
+
+    <!-- Lecture Review Section -->
+    <div class="card">
+      <h2>Lecture Review</h2>
+      <p>
+        This section is dedicated to reviewing lectures, lecture notes, and
+        feedback from students regarding various courses and topics.
+      </p>
+    </div>
+  </div>
+</body>
+{% endblock content %}
+<!-- </html> -->
