@@ -29,7 +29,7 @@ def master_page(request):
 
 
 def library_review(request):
-    return render(request, 'library_review.html')
+    return render(request, 'library.html')
 
 def lecture_review(request):
-    return render(request, 'lecture_review.html')
+    return render(request, 'lecture.html')
