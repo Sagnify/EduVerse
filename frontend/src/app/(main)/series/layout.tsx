@@ -16,7 +16,7 @@ const Layout = ({
     <main className="">
       {children}
       {user?.profile.is_teacher && (
-        <Link href="/lectures/new">
+        <Link href="/series/new">
           <Button
             variant={"outline"}
             size={"lg"}

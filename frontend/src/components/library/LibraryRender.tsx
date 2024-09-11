@@ -16,7 +16,7 @@ const Library: React.FC<LibraryProps> = ({ library }) => {
     <Card
       key={library.uuid}
       onClick={handlePostClick} // Handle click on the library
-      className="group/library rounded-2xl bg-card p-5 shadow-[0_3px_15px_rgb(0,0,0,0.12)] cursor-pointer" // Added cursor-pointer for better UX
+      className="group/library rounded-2xl bg-card shadow-[0_3px_15px_rgb(0,0,0,0.12)] cursor-pointer p-3" // Added cursor-pointer for better UX
     >
       <div className="flex gap-3 items-center m-0 p-0">
         <p className="flex items-center gap-1 font-medium">

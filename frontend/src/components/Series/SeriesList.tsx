@@ -1,10 +1,10 @@
 // components/libraries/PostList.tsx
 "use client";
 import React, { useEffect, useState } from "react";
-import Lecture from "./LectureRender";
+import Series from "./SeriesRender";
 import { fetchAllLectures } from "@/core/fetchLectures";
 
-const LecturesList: React.FC = () => {
+const SeriesList: React.FC = () => {
   const [series, setLectures] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,10 +36,10 @@ const LecturesList: React.FC = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {series.map((series) => (
-        <Lecture key={series.uuid} series={series} />
+        <Series key={series.uuid} series={series} />
       ))}
     </div>
   );
 };
 
-export default LecturesList;
+export default SeriesList;
