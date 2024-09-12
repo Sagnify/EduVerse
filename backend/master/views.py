@@ -5,6 +5,7 @@ from django.contrib import messages
 from main.models import *
 from django.contrib.auth.models import User
 
+
 def login_page(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -29,7 +30,19 @@ def master_page(request):
 
 
 def library_review(request):
-    return render(request, 'library.html')
+    if not request.user.is_superuser:
+        return HttpResponse("Unauthorized", status=401)
+    
+    Libasset=LibAsset.objects.filter(visibility=False)
+    context={'lib':Libasset}
+    # try:
+    #     book = LibAsset.objects.get(uuid=uuid)
+    #     book.visibility = not book.visibility  # Toggle verification status
+    #     book.save()
+    # except LibAsset.DoesNotExist:
+    #     return HttpResponse("Book not found", status=404)
+    return render(request, 'library.html',context)
+
 
 def lecture_review(request):
     return render(request, 'lecture.html')
