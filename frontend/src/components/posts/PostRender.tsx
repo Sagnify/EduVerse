@@ -3,7 +3,13 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { formatReletiveDate } from "@/lib/utils";
-import { ChevronsDown, ChevronsUp, MessageSquare } from "lucide-react";
+import {
+  ChevronsDown,
+  ChevronsUp,
+  MessageSquare,
+  Play,
+  Pause,
+} from "lucide-react";
 import useUpvote from "@/core/useUpvote";
 import useDownvote from "@/core/useDownvote"; // Import the useDownvote hook
 
@@ -11,6 +17,10 @@ const Post: React.FC<PostProps> = ({ post }) => {
   const [totalVote, setTotalVote] = useState(post.total_vote);
   const [isUpvoted, setIsUpvoted] = useState(post.has_upvoted);
   const [isDownvoted, setIsDownvoted] = useState(post.has_downvoted);
+  const [speakingPostId, setSpeakingPostId] = useState<string | null>(null); // Track currently speaking post
+  const [currentUtterance, setCurrentUtterance] =
+    useState<SpeechSynthesisUtterance | null>(null); // Track the current utterance
+
   const router = useRouter();
 
   const { handleUpvote } = useUpvote(
@@ -49,6 +59,32 @@ const Post: React.FC<PostProps> = ({ post }) => {
 
   const handlePostClick = () => {
     router.push(`/post/${post.uuid}`); // Navigate to the post page
+  };
+
+  // Handle speech play/pause
+  const handleSpeechToggle = (postId: string, postText: string) => {
+    if (speakingPostId === postId && currentUtterance) {
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        setSpeakingPostId(null);
+      } else if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        setSpeakingPostId(postId);
+      }
+    } else {
+      // If another post is speaking, stop it
+      if (currentUtterance) {
+        window.speechSynthesis.cancel();
+      }
+
+      // Create a new utterance for the post
+      const utterance = new SpeechSynthesisUtterance(postText);
+      utterance.onend = () => setSpeakingPostId(null); // Reset state after speech ends
+      window.speechSynthesis.speak(utterance);
+
+      setCurrentUtterance(utterance);
+      setSpeakingPostId(postId); // Set the new speaking post
+    }
   };
 
   return (
@@ -123,6 +159,17 @@ const Post: React.FC<PostProps> = ({ post }) => {
         >
           {post.comment_count}
           <MessageSquare size={20} />
+        </button>
+
+        {/* Play/Pause button for the post */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent click propagation to the post container
+            handleSpeechToggle(post.uuid, post.caption); // Toggle speech for the post caption
+          }}
+          className="ml-4 p-1.5 bg-blue-500 text-white rounded-full"
+        >
+          {speakingPostId === post.uuid ? <Pause /> : <Play />}
         </button>
       </div>
     </div>

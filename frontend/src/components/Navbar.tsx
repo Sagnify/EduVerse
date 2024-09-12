@@ -1,5 +1,5 @@
 "use client";
-import {Plus, SearchIcon } from "lucide-react";
+import {Languages, Plus, SearchIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import SearchField from "./searchField";
@@ -26,9 +26,7 @@ export default function Navbar() {
             variant="ghost"
             onClick={() => setIsSearchOpen(!isSearchOpen)}
           >
-            <div className="text-xl">
-              search
-            </div>
+            <div className="text-xl">search</div>
             <SearchIcon className="size-7 cursor-pointer text-muted-foreground" />
           </Button>
           <div className="hidden xl:block">
@@ -36,6 +34,14 @@ export default function Navbar() {
           </div>
           <Button variant="ghost" className="flex flex-col items-center">
             <UserButton />
+          </Button>
+          <Button
+            variant="ghost"
+            className="flex gap-2 items-center"
+            onClick={() => router.push("/translate")} // Redirect to translate page
+          >
+            <Languages />
+            translate
           </Button>
         </div>
       </div>

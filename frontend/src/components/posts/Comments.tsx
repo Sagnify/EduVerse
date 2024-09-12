@@ -5,7 +5,7 @@ import { formatReletiveDate } from "@/lib/utils";
 import CommentInput from "./CommentInput";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
-import { CornerRightDown } from "lucide-react";
+import { CornerRightDown, Pause, Play } from "lucide-react";
 
 interface CommentsProps {
   uuid: string;
@@ -18,6 +18,11 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
   const scrollAreaRef = useRef<HTMLDivElement | null>(null); // Scrollable area reference
   const bottomRef = useRef<HTMLDivElement | null>(null); // Bottom element reference
   const [showScrollToBottom, setShowScrollToBottom] = useState(false); // Show "Scroll to Bottom" button
+  const [speakingCommentId, setSpeakingCommentId] = useState<number | null>(
+    null
+  ); // Track the currently speaking comment
+  const [currentUtterance, setCurrentUtterance] =
+    useState<SpeechSynthesisUtterance | null>(null); // Track the current utterance
 
   // Fetch comments function
   const fetchAndUpdateComments = async () => {
@@ -26,6 +31,32 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
       setComments(fetchedComments);
     } catch (err) {
       setError((err as Error).message);
+    }
+  };
+
+  const handleSpeechToggle = (commentId: number, commentText: string) => {
+    // If this comment is currently speaking, pause or stop it
+    if (speakingCommentId === commentId && currentUtterance) {
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        setSpeakingCommentId(null);
+      } else if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        setSpeakingCommentId(commentId);
+      }
+    } else {
+      // If another comment is speaking, cancel it
+      if (currentUtterance) {
+        window.speechSynthesis.cancel();
+      }
+
+      // Create a new utterance for the new comment
+      const utterance = new SpeechSynthesisUtterance(commentText);
+      utterance.onend = () => setSpeakingCommentId(null); // Reset the state when speech ends
+      window.speechSynthesis.speak(utterance);
+
+      setCurrentUtterance(utterance);
+      setSpeakingCommentId(commentId); // Set the new speaking comment
     }
   };
 
@@ -149,7 +180,17 @@ const Comments: React.FC<CommentsProps> = ({ uuid }) => {
                       {formatReletiveDate(new Date(comment.created_at))}
                     </p>
                   </div>
-                  <p className="font-bold my-1">{comment.comment_caption}</p>
+                  <p className="font-bold my-1">
+                    {comment.comment_caption}
+                    <button
+                      onClick={() =>
+                        handleSpeechToggle(comment.id, comment.comment_caption)
+                      }
+                      className="ml-2"
+                    >
+                      {speakingCommentId === comment.id ? <Pause /> : <Play />}
+                    </button>
+                  </p>
                 </div>
               </div>
             );

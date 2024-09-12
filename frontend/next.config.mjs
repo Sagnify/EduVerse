@@ -9,6 +9,11 @@ const nextConfig = {
       },
     ],
   },
+  i18n: {
+    locales: ["en", "hi"], // Add the languages you want to support
+    defaultLocale: "en", // Default language
+    localeDetection: true, // Detect the user's preferred language automatically
+  },
 };
 
 export default nextConfig;
