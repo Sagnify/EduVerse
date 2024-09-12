@@ -514,7 +514,7 @@ class LectureViewSet(viewsets.ModelViewSet):
         if series_id is not None:
             try:
                 series_id = int(series_id)
-                queryset = queryset.filter(series=series_id)
+                queryset = queryset.filter(series=series_id).order_by('-created_at')
             except ValueError:
                 queryset = queryset.none()  # Return empty queryset if `series_id` is not a valid integer
 
