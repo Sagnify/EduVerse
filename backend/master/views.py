@@ -68,4 +68,10 @@ def verify_book(request):
 
 
 def lecture_review(request):
-    return render(request, 'lecture.html')
+    if not request.user.is_superuser:
+        return HttpResponse("Unauthorized", status=401)
+    
+    Lectures =Lecture.objects.filter(visibility=False)
+    context={'lectures':Lectures}
+
+    return render(request, 'lectures.html', context)

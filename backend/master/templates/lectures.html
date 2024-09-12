@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container mx-auto mt-10">
+    <h1 class="text-3xl font-bold mb-6">Video Review Panel</h1>
+
+    {% for lec in lectures %}
+    <!-- Video bubble starts here -->
+    <div class="bg-white shadow-lg rounded-full flex items-center justify-between p-4 mb-6 mx-5">
+        <div>
+            <h2 class="text-lg font-semibold">{{lec.title}}</h2>
+            <p class="text-gray-600">Uploaded by: <span class="font-medium">{{lec.user}}</span></p>
+        </div>
+        <div class="flex space-x-4">
+            <button class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-full">
+                Approve
+            </button>
+            <button class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-full">
+                Reject
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Additional video bubbles can be added here -->
+</div>
+
+    {% endblock %}
