@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
-
+from django.contrib.auth import logout
 
 def login_page(request):
     if request.method == 'POST':
@@ -75,3 +75,8 @@ def lecture_review(request):
     context={'lectures':Lectures}
 
     return render(request, 'lectures.html', context)
+
+
+def logout_page(request):
+   logout(request)
+   return redirect('login_page')
