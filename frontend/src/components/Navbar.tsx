@@ -22,10 +22,13 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-1">
           <Button
-            className="block xl:hidden"
+            className="xl:hidden flex item-center gap-3"
             variant="ghost"
             onClick={() => setIsSearchOpen(!isSearchOpen)}
           >
+            <div className="text-xl">
+              search
+            </div>
             <SearchIcon className="size-7 cursor-pointer text-muted-foreground" />
           </Button>
           <div className="hidden xl:block">
