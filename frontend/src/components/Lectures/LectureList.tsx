@@ -21,7 +21,7 @@ const LectureList: React.FC<{ id: string,  }> = ({ id }) => {
         } else {
           setError("An unknown error occurred");
         }
-        setLoading(false); // Stop loading on error
+        setLoading(false);
       }
     };
 
@@ -29,7 +29,7 @@ const LectureList: React.FC<{ id: string,  }> = ({ id }) => {
   }, [id]);
 
   if (loading) {
-    return <div>Loading...</div>; // Display loading state
+    return <div>Loading...</div>;
   }
 
   if (error) {

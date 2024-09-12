@@ -104,7 +104,7 @@ export default function NewPostPage() {
         <div className="mb-4">
           <Input
             type="text"
-            placeholder="Title"
+            placeholder="If you are asking a doubt then write 'question' & mention  a question mark '?'"
             {...register("title")}
             className="w-full p-2 text-xl font-bold border-2 border-gray-200 rounded-md"
           />

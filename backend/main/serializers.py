@@ -7,7 +7,7 @@ from .models import *
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['is_student', 'is_teacher']
+        fields = ['is_student', 'is_teacher', 'language']
 
     def validate(self, data):
         if data.get('is_student') == data.get('is_teacher'):
