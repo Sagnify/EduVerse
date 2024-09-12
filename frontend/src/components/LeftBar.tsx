@@ -26,7 +26,7 @@ export default function Leftbar() {
             Library
           </Button>
         </Link>
-        <Link href={`/lectures`}>
+        <Link href={`/series`}>
           <Button variant="ghost" className="w-full px-2 gap-2 justify-normal">
             <SquarePlay />
             Lectures
@@ -56,7 +56,7 @@ export default function Leftbar() {
             <Plus size={20} />
           </Button>
         </Link>
-        <Link href={`/lectures`}>
+        <Link href={`/series`}>
           <Button variant="ghost" className="flex flex-col items-center">
             <SquarePlay />
           </Button>

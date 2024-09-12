@@ -67,12 +67,13 @@ interface SeriesProps {
     description: string;
     created_at: string;
     user: User;
-    lectures: Lecture;
+    lectures: LectureProps[];
     lecture_count: number;
   };
 }
 
-interface Lecture {
+interface LectureProps {
+  lectures: {
     id: number;
     lecture_url: string;
     thumbnail_url: string;
@@ -87,3 +88,4 @@ interface Lecture {
     is_verified: boolean;
     series: number;
   };
+}

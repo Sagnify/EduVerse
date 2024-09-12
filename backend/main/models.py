@@ -118,7 +118,7 @@ class LibAsset(models.Model):
     subject = models.TextField(null=True, blank=True)
     standard = models.TextField(null=True, blank=True)
 
-    is_verified = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
 
 class Series(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -145,7 +145,7 @@ class Lecture(models.Model):
     asset_sel = models.ForeignKey(LibAsset, on_delete=models.CASCADE, blank=True, null=True)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
     visibility = models.BooleanField(default=True)
-    is_verified = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
     series = models.ForeignKey(Series, on_delete=models.CASCADE, related_name='lectures')
 
     def __str__(self):
