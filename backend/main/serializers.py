@@ -260,11 +260,12 @@ class LectureSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.none(), required=True)
     rating = serializers.FloatField(read_only=True)
     is_verified = serializers.BooleanField(read_only=True)
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Lecture
         fields = [
-            'id', 'lecture_url', 'thumbnail_url', 'title', 'description', 
+            'id', 'user', 'lecture_url', 'thumbnail_url', 'title', 'description', 
             'stream', 'subject', 'standard', 'asset_sel', 'rating', 
             'visibility', 'is_verified', 'series'
         ]
