@@ -19,7 +19,7 @@ const Lectures: React.FC<{ lectures: LectureProps["lectures"] }> = ({
     <Card
       key={lectures.id}
       onClick={handlePostClick} // Handle click on the lecture
-      className="group/library rounded-2xl bg-card flex items-center gap-4 shadow-[0_3px_15px_rgb(0,0,0,0.12)] cursor-pointer p-3 w-full" // Added cursor-pointer for better UX
+      className="group/library rounded-2xl bg-card flex items-center gap-4 my-2 shadow-[0_3px_15px_rgb(0,0,0,0.12)] cursor-pointer p-3 w-full" // Added cursor-pointer for better UX
     >
       <Image
         src={"/"}

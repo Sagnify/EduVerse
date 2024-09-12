@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { fetchAllLectures } from "@/core/fetchLectures";
 import Lectures from "./LectureRender";
 
-const LectureList: React.FC<{ id: string }> = ({ id }) => {
+const LectureList: React.FC<{ id: string,  }> = ({ id }) => {
   const [lectures, setLectures] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true); // Loading state
