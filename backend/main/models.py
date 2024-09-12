@@ -10,6 +10,7 @@ from .jwt import create_jwt_for_user
 # UserProfile Model
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    language = models.CharField(max_length=200, blank=True, null=True)
     is_student = models.BooleanField(default=False)
     is_teacher = models.BooleanField(default=False)
 
