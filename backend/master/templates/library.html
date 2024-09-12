@@ -17,7 +17,7 @@
                 <th class="px-4 py-2 text-left">#</th>
                 <th class="px-4 py-2 text-left">Book Title</th>
                 <!-- <th class="px-4 py-2 text-left">Author</th> -->
-                <th class="px-4 py-2 text-left">Status</th>
+                <th class="px-4 py-2 text-left">Teacher Name</th>
                 <th class="px-4 py-2 text-left">Actions</th>
               </tr>
             </thead>
@@ -26,23 +26,70 @@
               <tr class="border-b">
                 <td class="px-4 py-2">{{ forloop.counter }}</td>
                 <td class="px-4 py-2">{{ book.title }}</td>
-                <!-- <td class="px-4 py-2">{{ book.user }}</td> -->
+                <td class="px-4 py-2">{{ book.user }}</td>
                 <td class="px-4 py-2">
-                  <span
-                    class="px-2 py-1 rounded-full text-white {% if book.status == 'Verified' %} bg-green-500 {% else %} bg-yellow-500 {% endif %}"
-                  >
-                    <!-- {{ book.is_verified }} -->
-                    {{book.visibility}}
-                    <p>
-                      <label>
-                        <input type="checkbox" />
-                        <span>Red</span>
-                      </label>
-                    </p>
-                  </span>
+                  <div id="buttons-{{ book.id }}">
+                    <!-- Two buttons: verified and not verified -->
+                    <button
+                      onclick="verifyBook('{{ book.uuid }}')"
+                      class="bg-green-500 text-white px-2 py-1 rounded"
+                    >
+                      ✔
+                    </button>
+                    <button class="bg-red-500 text-white px-2 py-1 rounded">
+                      ✘
+                    </button>
+                  </div>
+
+                  <!-- This will be displayed when the book is verified -->
+                  <div id="verified-{{ book.id }}" style="display: none">
+                    Verified
+                  </div>
                 </td>
               </tr>
               {% endfor %}
+
+              <script>
+                function verifyBook(bookId) {
+                  // Get the button container and verified message elements
+                  const buttonContainer = document.getElementById(
+                    "buttons-" + bookId
+                  );
+                  const verifiedMessage = document.getElementById(
+                    "verified-" + bookId
+                  );
+
+                  // Check if both elements exist before trying to manipulate them
+                  if (buttonContainer && verifiedMessage) {
+                    // Hide the buttons and show the 'Verified' message
+                    buttonContainer.style.display = "none";
+                    verifiedMessage.style.display = "block";
+
+                    // Send the AJAX request to update the verification status
+                    fetch("{% url 'verify_book' %}", {
+                      method: "POST",
+                      headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        book_id: bookId,
+                      }),
+                    })
+                      .then((response) => response.json())
+                      .then((data) => {
+                        if (data.success) {
+                          console.log("Book verified successfully");
+                        } else {
+                          console.error("Error verifying book");
+                        }
+                      })
+                      .catch((error) => console.error("Error:", error));
+                  } else {
+                    console.error("Element not found for book ID:", bookId);
+                  }
+                }
+              </script>
             </tbody>
           </table>
         </div>

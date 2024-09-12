@@ -4,6 +4,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from main.models import *
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
 
 
 def login_page(request):
@@ -33,7 +36,7 @@ def library_review(request):
     if not request.user.is_superuser:
         return HttpResponse("Unauthorized", status=401)
     
-    Libasset=LibAsset.objects.filter(visibility=False)
+    Libasset=LibAsset.objects.filter(is_verified=False)
     context={'lib':Libasset}
     # try:
     #     book = LibAsset.objects.get(uuid=uuid)
@@ -42,6 +45,26 @@ def library_review(request):
     # except LibAsset.DoesNotExist:
     #     return HttpResponse("Book not found", status=404)
     return render(request, 'library.html',context)
+
+
+@csrf_exempt
+def verify_book(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        book_id = data.get('book_id')
+        
+        try:
+            book = LibAsset.objects.get(id=book_id)
+            book.is_verified = True
+            book.save()
+            return JsonResponse({'success': True})
+        except LibAsset.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Book not found'}, status=404)
+
+    return JsonResponse({'success': False}, status=400)
+
+
+
 
 
 def lecture_review(request):
