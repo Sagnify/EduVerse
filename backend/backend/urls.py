@@ -27,5 +27,6 @@ urlpatterns = [
     path('master/library-review/', library_review, name='library_review'),
     path('verify-book/', verify_book, name='verify_book'),
     path('master/lecture-review/', lecture_review, name='lecture_review'),
+    path('logout/', logout_page, name='logout_page'),    
     path('api/', include('main.urls'))
 ]
