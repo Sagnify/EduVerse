@@ -37,7 +37,7 @@ def library_review(request):
         return HttpResponse("Unauthorized", status=401)
     
     Libasset=LibAsset.objects.filter(is_verified=False)
-    context={'lib':Libasset}
+    context={'lib':Libasset, 'select': 'lib'}
     # try:
     #     book = LibAsset.objects.get(uuid=uuid)
     #     book.visibility = not book.visibility  # Toggle verification status
@@ -72,6 +72,6 @@ def lecture_review(request):
         return HttpResponse("Unauthorized", status=401)
     
     Lectures =Lecture.objects.filter(visibility=False)
-    context={'lectures':Lectures}
+    context={'lectures':Lectures, 'select':'lec'}
 
     return render(request, 'lectures.html', context)
