@@ -25,7 +25,7 @@ urlpatterns = [
     path('master/login/', login_page, name='login_page'),
     path('master/', master_page, name='master_page'),
     path('master/library-review/', library_review, name='library_review'),
-    path('verify-book/', verify_book, name='verify_book'),
+    path('verify-book/<uuid:book_id>/', verify_book, name='verify_book'),
     path('master/lecture-review/', lecture_review, name='lecture_review'),
     path('logout/', logout_page, name='logout_page'),    
     path('api/', include('main.urls'))

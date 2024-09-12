@@ -28,7 +28,7 @@
                 <td class="px-4 py-2">{{ book.title }}</td>
                 <td class="px-4 py-2">{{ book.user }}</td>
                 <td class="px-4 py-2">
-                  <div id="buttons-{{ book.id }}">
+                  <div id="buttons-{{ book.uuid }}">
                     <!-- Two buttons: verified and not verified -->
                     <button
                       onclick="verifyBook('{{ book.uuid }}')"
@@ -42,7 +42,7 @@
                   </div>
 
                   <!-- This will be displayed when the book is verified -->
-                  <div id="verified-{{ book.id }}" style="display: none">
+                  <div id="verified-{{ book.uuid }}" style="display: none">
                     Verified
                   </div>
                 </td>
@@ -59,22 +59,21 @@
                     "verified-" + bookId
                   );
 
-                  // Check if both elements exist before trying to manipulate them
                   if (buttonContainer && verifiedMessage) {
                     // Hide the buttons and show the 'Verified' message
                     buttonContainer.style.display = "none";
                     verifiedMessage.style.display = "block";
 
+                    // Dynamically create the URL with the bookId (UUID)
+                    const url = `/verify-book/${bookId}/`; // Pass bookId in the URL
+
                     // Send the AJAX request to update the verification status
-                    fetch("{% url 'verify_book' %}", {
+                    fetch(url, {
                       method: "POST",
                       headers: {
-                        "X-CSRFToken": "{{ csrf_token }}",
+                        "X-CSRFToken": "{{ csrf_token }}", // Pass CSRF token
                         "Content-Type": "application/json",
                       },
-                      body: JSON.stringify({
-                        book_id: bookId,
-                      }),
                     })
                       .then((response) => response.json())
                       .then((data) => {
@@ -86,7 +85,7 @@
                       })
                       .catch((error) => console.error("Error:", error));
                   } else {
-                    console.error("Element not found for book ID:", bookId);
+                    console.error("Element not found for book UUID:", bookId);
                   }
                 }
               </script>

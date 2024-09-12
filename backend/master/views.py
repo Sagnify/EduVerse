@@ -38,23 +38,14 @@ def library_review(request):
     
     Libasset=LibAsset.objects.filter(is_verified=False)
     context={'lib':Libasset, 'select': 'lib'}
-    # try:
-    #     book = LibAsset.objects.get(uuid=uuid)
-    #     book.visibility = not book.visibility  # Toggle verification status
-    #     book.save()
-    # except LibAsset.DoesNotExist:
-    #     return HttpResponse("Book not found", status=404)
     return render(request, 'library.html',context)
 
 
 @csrf_exempt
-def verify_book(request):
+def verify_book(request, book_id):  # Accept book_id from the URL
     if request.method == 'POST':
-        data = json.loads(request.body)
-        book_id = data.get('book_id')
-        
         try:
-            book = LibAsset.objects.get(id=book_id)
+            book = LibAsset.objects.get(uuid=book_id)
             book.is_verified = True
             book.save()
             return JsonResponse({'success': True})
@@ -64,7 +55,18 @@ def verify_book(request):
     return JsonResponse({'success': False}, status=400)
 
 
+@csrf_exempt
+def verify_lecture(request, id):  # Accept book_id from the URL
+    if request.method == 'POST':
+        try:
+            lecture = Lecture.objects.get(id=id)
+            lecture.is_verified = True
+            lecture.save()
+            return JsonResponse({'success': True})
+        except lecture.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Lecture not found'}, status=404)
 
+    return JsonResponse({'success': False}, status=400)
 
 
 def lecture_review(request):
