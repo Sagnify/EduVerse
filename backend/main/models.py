@@ -118,7 +118,7 @@ class LibAsset(models.Model):
     subject = models.TextField(null=True, blank=True)
     standard = models.TextField(null=True, blank=True)
 
-    is_verified = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
 
 class Series(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
