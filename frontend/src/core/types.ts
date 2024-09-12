@@ -89,3 +89,20 @@ interface LectureProps {
     series: number;
   };
 }
+
+interface IndividualLectureProps {
+  id: number;
+  lecture_url: string;
+  thumbnail_url: string;
+  title: string;
+  description: string;
+  stream: string;
+  subject: string;
+  standard: string;
+  user: User;
+  asset_sel: string | null;
+  rating: number;
+  visibility: boolean;
+  is_verified: boolean;
+  series: number;
+}

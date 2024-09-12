@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
-import { SearchIcon } from "lucide-react";
+import { Mic, SearchIcon } from "lucide-react";
 
 interface SearchFieldProps {
   beautify?: boolean;
@@ -34,12 +34,19 @@ export default function SearchField({ beautify }: SearchFieldProps) {
         <Input
           name="q"
           placeholder="Search"
-          className={`transition-all duration-200 ${beautify ? `w-[90vw]` : `w-[35rem]`} `}
+          className={`transition-all duration-200 ${
+            beautify ? `w-[90vw]` : `w-[35rem]`
+          } `}
         />
-        <SearchIcon
-          className="absolute right-3 top-1/2 size-5 -translate-y-1/2 transform cursor-pointer text-muted-foreground"
-          onClick={handleIconClick}
-        />
+        <div
+          className="absolute right-3 top-1/2 -translate-y-1/2 transform
+          cursor-pointer text-muted-foreground"
+        >
+          <div className="flex items-center gap-1">
+            <SearchIcon onClick={handleIconClick}  size={20}/>
+            <Mic size={20}/>
+          </div>
+        </div>
       </div>
     </form>
   );

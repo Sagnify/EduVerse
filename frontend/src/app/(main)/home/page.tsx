@@ -6,6 +6,7 @@ import useUserFetcher from "@/core/fetchUser";
 import Loading from "@/components/Loader";
 import PostList from "@/components/posts/PostList";
 import Current from "@/components/posts/CurrentLearning";
+import Filters from "@/components/posts/Filters.tsx";
 
 const Page = () => {
   const { user, loading, error } = useUserFetcher();
