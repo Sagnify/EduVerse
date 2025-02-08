@@ -1,11 +1,12 @@
 {
-    "builds": [
-      {
-        "src": "backend/wsgi.py",
-        "use": "@vercel/python",
-       "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.11.3"
+  "builds": [
+    {
+      "src": "backend/wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "runtime": "python3.11.3",
+        "maxLambdaSize": "100mb",
+        "memory": 1024
       }
     }
   ],
