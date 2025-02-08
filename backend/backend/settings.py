@@ -51,7 +51,7 @@ SECRET_KEY = 'django-insecure-o8vfo6!&p)i^!yu+zdc7vp%5ka)@25voq^jyf3fb4buo(@^m54
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['https://edu-verse-wymf.vercel.app/']
 
 
 # Application definition
