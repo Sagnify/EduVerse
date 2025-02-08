@@ -51,7 +51,7 @@ SECRET_KEY = 'django-insecure-o8vfo6!&p)i^!yu+zdc7vp%5ka)@25voq^jyf3fb4buo(@^m54
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://edu-verse-wymf.vercel.app/']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -91,6 +91,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1.:3000",
     "http://localhost:3000",
+    "https://edu-verse-skin.vercel.app",
 ]
 
 
